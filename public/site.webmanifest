@@ -1,0 +1,37 @@
+{
+    "name": "Trackfy Dashboard App",
+    "short_name": "Trackfy App",
+    "icons": [
+        {
+            "src": "/croc3.svg"
+        }
+    ],
+    "description": "Trackfy Dashboard App, dados inteligentes para suas decisões.",
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "url": "/",
+            "description": "Acesse o dashboard com suas métricas.",
+            "icons": [
+                {
+                    "src": "https://trackfyapp.com.br/images/logo/favicon.png"
+                }
+            ]
+            
+        },
+        {
+            "name": "Mapa",
+            "url": "/Map",
+            "description": "Veja as áreas no mapa interativo.",
+            "icons": [
+                {
+                    "src": "/https://trackfyapp.com.br/images/logo/favicon.png"
+                }
+            ]
+        }
+    ],
+    "start_url": ".",
+    "theme_color": "#2f4cdd",
+    "display": "standalone",
+    "orientation": "landscape-primary"
+}
