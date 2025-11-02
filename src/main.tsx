@@ -13,17 +13,9 @@ import { AlertProvider } from './Providers/Alerts.tsx';
 import Converter from './Pages/Converter.tsx';
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "*",
     element: <Layout><Converter /></Layout>,
   },
-  {
-    path: "/map",
-    element: <Layout><Map /></Layout>,
-  },
-  {
-    path: "/login",
-    element: <Login />
-  }
 
 ]);
 createRoot(document.getElementById('root')!).render(
