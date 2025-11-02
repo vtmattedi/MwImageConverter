@@ -1,35 +1,12 @@
 {
-    "name": "Trackfy Dashboard App",
-    "short_name": "Trackfy App",
+    "name": "MW Image Converter",
+    "short_name": "MW Image Converter",
     "icons": [
         {
-            "src": "/croc3.svg"
+            "src": "/logo.ico"
         }
     ],
-    "description": "Trackfy Dashboard App, dados inteligentes para suas decisões.",
-    "shortcuts": [
-        {
-            "name": "Dashboard",
-            "url": "/",
-            "description": "Acesse o dashboard com suas métricas.",
-            "icons": [
-                {
-                    "src": "https://trackfyapp.com.br/images/logo/favicon.png"
-                }
-            ]
-            
-        },
-        {
-            "name": "Mapa",
-            "url": "/Map",
-            "description": "Veja as áreas no mapa interativo.",
-            "icons": [
-                {
-                    "src": "/https://trackfyapp.com.br/images/logo/favicon.png"
-                }
-            ]
-        }
-    ],
+    "description": "MW Image Converter - Converta suas imagens com facilidade.",
     "start_url": ".",
     "theme_color": "#2f4cdd",
     "display": "standalone",

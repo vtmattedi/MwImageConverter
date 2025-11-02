@@ -99,7 +99,17 @@ const Header: React.FC = () => {
                         <i className='font-lato text-sm'>by mattediworks &copy;</i>
                     </div>
                 }
-                <ThemeSelector />
+                <div className='flex gap-4 items-center'>
+                    <ThemeSelector />
+                    <div className='flex gap-1 text-2xl' style={{ color: 'var(--text-secondary)' }}>
+                        <a className='hover:text-gray-500' href="https://github.com/vtmattedi" target="_blank" rel="noopener noreferrer">
+                            <span className='bi bi-github'/>
+                        </a>
+                        <a className='hover:text-gray-500'  href="https://www.linkedin.com/in/vitor-mattedi-dev/" target="_blank" rel="noopener noreferrer">
+                            <span className='bi bi-linkedin'/>
+                        </a>
+                    </div>
+                </div>
             </div>
             {/* {!onMobile && <ThemeSelector />} */}
             {/* {onMobile && (<div>

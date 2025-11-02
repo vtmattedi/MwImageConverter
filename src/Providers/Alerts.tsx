@@ -1,4 +1,4 @@
-import  { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -8,6 +8,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {  ShieldX } from 'lucide-react';
 
 interface Alert {
     message: ReactNode;
@@ -20,6 +21,7 @@ interface AlertContextProps {
     alert: Alert | null;
     showAlert: (message: ReactNode, title: ReactNode, onResult?: (result: boolean) => void) => void;
     clearAlert: () => void;
+    showError: (title: string, message: string) => void;
 }
 
 const AlertContext = createContext<AlertContextProps | undefined>(undefined);
@@ -39,41 +41,47 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
         setAlert({ message, title, onResult });
         setAlertVisible(true);
     };
-
-    const clearAlert = () => {
-        setAlert(null);
-        setAlertVisible(false);
+    const showError = (title: string, message: string) => {
+        setAlert({
+            message: <div>{message}</div>,
+            title: <div className='flex gap-2'><ShieldX color='red'/> {title}</div>
+        });
+        setAlertVisible(true);
     };
-   
-    return (
+    const clearAlert = () => {
+    setAlert(null);
+    setAlertVisible(false);
+};
 
-        <AlertContext.Provider value={{ alert, showAlert, clearAlert }}>
-            {children}
-            <AlertDialog open={alertVisible} onOpenChange={(open) => {
-                if (!open) {
-                    clearAlert();
-                }
-            }} >
-                <AlertDialogContent >
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className='font-lato'> {alert?.title}</AlertDialogTitle>
-                        <AlertDialogDescription asChild className='font-inter'>
-                            {alert?.message}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel className={'bg-red-500 dark:bg-[#8D0000] text-white'} onClick={() => {
-                            if (alert?.onResult) {
-                                alert?.onResult?.(false);
-                            }
-                            setAlertVisible(false);
-                        }}>OK</AlertDialogCancel>
-                        {/* <AlertDialogAction onClick={() => {
+return (
+
+    <AlertContext.Provider value={{ alert, showAlert, clearAlert, showError }}>
+        {children}
+        <AlertDialog open={alertVisible} onOpenChange={(open) => {
+            if (!open) {
+                clearAlert();
+            }
+        }} >
+            <AlertDialogContent >
+                <AlertDialogHeader>
+                    <AlertDialogTitle className='font-lato'> {alert?.title}</AlertDialogTitle>
+                    <AlertDialogDescription asChild className='font-inter'>
+                        {alert?.message}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel className={'bg-red-500 dark:bg-[#8D0000] text-white'} onClick={() => {
+                        if (alert?.onResult) {
+                            alert?.onResult?.(false);
+                        }
+                        setAlertVisible(false);
+                    }}>OK</AlertDialogCancel>
+                    {/* <AlertDialogAction onClick={() => {
                             alert?.onResult?.(true);
                         }} >OK</AlertDialogAction> */}
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </AlertContext.Provider>
-    );
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    </AlertContext.Provider>
+);
 };
