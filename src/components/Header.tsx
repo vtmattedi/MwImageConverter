@@ -1,9 +1,8 @@
 import React from 'react';
-import { Images, Timer } from 'lucide-react';
+import { Images } from 'lucide-react';
 // import ThemeSelector from './ThemeSelector';
 // import confetti from 'canvas-confetti';
 // import { MenuIcon } from 'lucide-react';
-import { useGlobals } from '../Providers/Globals';
 import { useNavigate } from 'react-router';
 import ThemeSelector from './ThemeSelector';
 // import {
