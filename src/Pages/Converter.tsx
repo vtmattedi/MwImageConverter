@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import Dexie, { type Table } from "dexie";
 import { Download, LoaderCircle, Trash2, Upload } from "lucide-react";
 import { useAlert } from "../Providers/Alerts";
+import JSZip from "jszip";
 // Define the structure of stored files
 interface ConvertedFile {
     id?: number;
     name: string;
-    url: string;
+    base64?: string;
     size: number;
     quality?: number;
     progress?: number;
@@ -17,8 +18,8 @@ class WebPDatabase extends Dexie {
     files!: Table<ConvertedFile, number>;
     constructor() {
         super("webpConverterDB");
-        this.version(2).stores({
-            files: "++id, name, size, quality",
+        this.version(5).stores({
+            files: "++id, name, size, quality, base64",
         });
     }
 }
@@ -28,6 +29,7 @@ const ConvertToWebPPage: React.FC = () => {
     const [converted, setConverted] = useState<ConvertedFile[]>([]);
     const [loading, setLoading] = useState(false);
     const [quality, setQuality] = useState(85);
+    const [zipping, setZipping] = useState(false);
     const { showAlert } = useAlert();
     // Load saved files from Dexie
     useEffect(() => {
@@ -97,11 +99,21 @@ const ConvertToWebPPage: React.FC = () => {
                         prev.map((f) => (f.id === id ? { ...f, progress: p } : f))
                     );
                 });
-                const webpUrl = URL.createObjectURL(webpBlob);
+                const b64 = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        if (reader.result) {
+                            resolve(reader.result as string);
+                        } else {
+                            reject(new Error("Failed to read file"));
+                        }
+                    };
+                    reader.readAsDataURL(webpBlob);
+                });
                 newFile = {
                     ...newFile,
-                    url: webpUrl,
                     size: webpBlob.size,
+                    base64: b64,
                     progress: 100,
                 };
                 await db.files.add(newFile);
@@ -118,13 +130,24 @@ const ConvertToWebPPage: React.FC = () => {
         event.target.value = "";
     };
 
-    const handleDownloadAll = () => {
-        converted.forEach((file) => {
-            const a = document.createElement("a");
-            a.href = file.url;
-            a.download = file.name;
-            a.click();
-        });
+    const handleDownloadAll =  async () => {
+
+        const zip = new JSZip();
+        setZipping(true);
+
+        for (const file of converted) {
+            const blob = await (await fetch(file.base64!)).blob();
+            zip.file(file.name, blob);
+        }
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        const zipUrl = URL.createObjectURL(zipBlob);
+        const a = document.createElement("a");
+        a.href = zipUrl;
+        a.download = "converted_images.zip";
+        a.click();
+        URL.revokeObjectURL(zipUrl);
+        setZipping(false);
     };
 
     const handleClear = async () => {
@@ -176,9 +199,11 @@ const ConvertToWebPPage: React.FC = () => {
                         <button
                             onClick={handleDownloadAll}
                             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                            disabled={zipping}
                         >
                             <Download size={18} />
-                            Download All
+                            {zipping ? 'Preparing...' : 'Download All'}
+                            {zipping && <LoaderCircle className="inline animate-spin" />}
                         </button>
 
                         <button
@@ -203,9 +228,9 @@ const ConvertToWebPPage: React.FC = () => {
                         className="border rounded-xl shadow-sm p-4 flex flex-col items-center transition hover:shadow-md"
                     >
                         <div className="w-full h-48 flex items-center justify-center bg-gray-50 rounded-lg mb-2">
-                            {file.url ? (
+                            {file.base64 ? (
                                 <img
-                                    src={file.url}
+                                    src={file.base64}
                                     alt={file.name}
                                     className="max-h-44 object-contain"
                                 />
@@ -215,7 +240,7 @@ const ConvertToWebPPage: React.FC = () => {
                         </div>
                         <p className="font-medium text-sm">{file.name}</p>
                         <p className="text-xs text-gray-500 mb-2">
-                            {file.size ? `${(file.size / 1024).toFixed(1)} KB` : ""} ({file.quality ? file.quality * 100 : 0}%)
+                            {file.size ? file.size > 1024 * 1024 ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : `${(file.size / 1024).toFixed(1)} KB` : ""} ({file.quality ? file.quality * 100 : 0}%)
                         </p>
 
                         {/* Progress bar */}
@@ -229,9 +254,9 @@ const ConvertToWebPPage: React.FC = () => {
                         )}
                         <div className="flex gap-3">
                             <a
-                                href={file.url}
+                                href={file.base64}
                                 download={file.name}
-                                className={`mt-1 px-3 py-1 text-white rounded-md text-sm ${file.url
+                                className={`mt-1 px-3 py-1 text-white rounded-md text-sm ${file.base64
                                     ? "bg-blue-600 hover:bg-blue-700"
                                     : "bg-gray-400 cursor-not-allowed"
                                     }`}
