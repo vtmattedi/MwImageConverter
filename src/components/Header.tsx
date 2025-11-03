@@ -5,6 +5,7 @@ import { Images } from 'lucide-react';
 // import { MenuIcon } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import ThemeSelector from './ThemeSelector';
+import { useGlobals } from '@/Providers/Globals';
 // import {
 //     Sheet,
 //     SheetContent,
@@ -19,6 +20,7 @@ import ThemeSelector from './ThemeSelector';
 // import { useAlert } from '@/Providers/Alerts';
 const Header: React.FC = () => {
     const Navigate = useNavigate();
+    const {onMobile } = useGlobals();
     // const fireConfetti = () => {
     //     const duration = 5 * 1000;
     //     const animationEnd = Date.now() + duration;
@@ -75,7 +77,7 @@ const Header: React.FC = () => {
 
     return (
         <div
-            className="bg-[var(--header-bg)] w-full  flex justify-center items-center position-sticky top-0 z-999 shadow-md w-full h-[48px] px-4"
+            className={`bg-[var(--header-bg)] w-full  flex justify-center items-center position-sticky top-0  ${onMobile ? 'h-[72px] px-2' : 'h-[48px] px-12'}`}
             style={{
                 position: 'sticky',
                 top: 0,
@@ -83,9 +85,9 @@ const Header: React.FC = () => {
                 backdropFilter: 'saturate(180%) blur(20px)',
             }}>
 
-            <div className='flex flex-row justify-between items-center gap-2 w-full max-w-4xl'>
+            <div className='flex flex-row justify-between items-center gap-2 w-full max-w-[1200px] '>
                 {
-                    <div className='flex gap-1 hover:cursor-pointer'
+                    <div className={`flex gap-1 hover:cursor-pointer ${onMobile ? 'flex-col items-start' : 'flex-row items-start'}`}
                         onClick={() => {
                             Navigate('/');
                         }}
@@ -99,13 +101,13 @@ const Header: React.FC = () => {
                         <i className='font-lato text-sm'>by mattediworks &copy;</i>
                     </div>
                 }
-                <div className='flex gap-4 items-center'>
+                <div className={`flex items-center ${onMobile ? "gap-1 flex-col" : "gap-6"}`}>
                     <ThemeSelector />
-                    <div className='flex gap-1 text-2xl' style={{ color: 'var(--text-secondary)' }}>
-                        <a className='hover:text-gray-500' href="https://github.com/vtmattedi" target="_blank" rel="noopener noreferrer">
+                    <div className={`flex gap-1 text-2xl ${onMobile ? "gap-1" : "gap-2"}`} style={{ color: 'var(--text-secondary)' }}>
+                        <a className={`hover:text-gray-500 ${onMobile ? "text-[20px]" : ""}`} href="https://github.com/vtmattedi" target="_blank" rel="noopener noreferrer">
                             <span className='bi bi-github'/>
                         </a>
-                        <a className='hover:text-gray-500'  href="https://www.linkedin.com/in/vitor-mattedi-dev/" target="_blank" rel="noopener noreferrer">
+                        <a className={`hover:text-gray-500 ${onMobile ? "text-[20px]" : ""}`} href="https://www.linkedin.com/in/vitor-mattedi-dev/" target="_blank" rel="noopener noreferrer">
                             <span className='bi bi-linkedin'/>
                         </a>
                     </div>

@@ -42,7 +42,7 @@ const ConvertToWebPPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [quality, setQuality] = useState(85);
     const [zipping, setZipping] = useState(false);
-    const { theme } = useGlobals();
+    const { theme, onMobile } = useGlobals();
     const { showError } = useAlert();
     // Load saved files from Dexie
     useEffect(() => {
@@ -109,8 +109,7 @@ const ConvertToWebPPage: React.FC = () => {
 
     // Handle file input change
     const handleFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (loading)
-        {
+        if (loading) {
             showError('Conversion in progress', 'Please wait for the current conversion to finish before adding more files.');
             return;
         }
@@ -243,7 +242,6 @@ const ConvertToWebPPage: React.FC = () => {
                 />
             </div>
             <div className="flex justify-center gap-3 mb-4">
-
                 {converted.length > 0 && (
                     <>
                         <button
@@ -271,7 +269,7 @@ const ConvertToWebPPage: React.FC = () => {
                 <p className="text-gray-400 mb-4">Converting... please wait <LoaderCircle className="inline animate-spin" /></p>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            <div className={`grid gap-2 ${onMobile ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}            >
                 {converted.map((file) => (
                     <div
                         key={file.id}
@@ -326,7 +324,7 @@ const ConvertToWebPPage: React.FC = () => {
                         <div className="flex gap-3 flex-row">
                             <a
                                 style={{
-                                    display:'flex'
+                                    display: 'flex'
                                 }}
                                 href={file.base64}
                                 download={file.name}

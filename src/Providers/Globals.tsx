@@ -46,7 +46,7 @@ type GlobalProviderProps = {
 export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     const [user, _setUser] = useState<IUser | null>(defaultUser);
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
-    const [onMobile, setOnMobile] = useState<boolean>(window.innerWidth < 768);
+    const [onMobile, setOnMobile] = useState<boolean>(window.innerWidth < 600);
     const setDarkMode = (enabled: boolean) => {
         if (enabled) {
             document.documentElement.classList.add('dark');
@@ -83,7 +83,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         }
         // add event listener to track window resize and set onMobile accordingly
         const handleResize = () => {
-            setOnMobile(window.innerWidth < 1200);// 1200px breakpoint for the filter bar
+            setOnMobile(window.innerWidth < 600);// 600px breakpoint for mobile
         };
         window.addEventListener('resize', handleResize);
         handleResize(); // Initial check

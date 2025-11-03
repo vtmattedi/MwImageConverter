@@ -7,7 +7,7 @@ import { useGlobals } from '@/Providers/Globals';
 const ThemeSelector: React.FC = () => {
     const { theme, setDarkMode } = useGlobals();
     return (
-        <div className="pr-4 ">
+        <div className="">
             <ToggleGroup type="single" value={theme} className="border " aria-label="Theme Toggle">
                 <ToggleGroupItem value="dark" className='hover:cursor-pointer'
                     onClick={() => setDarkMode(true)}
