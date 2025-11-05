@@ -357,7 +357,7 @@ const ConvertToWebPPage: React.FC = () => {
             </label>
             <div className="flex flex-col md:flex-row justify-center items-center gap-4 py-6">
                 <Card className="px-6 h-[150px] w-[350px] flex flex-col justify-center gap-2">
-                    <div className="border">
+                    <div className="">
                         <label className="block mb-1 font-medium">Quality: {quality}%</label>
                         <input
                             disabled={loading}
@@ -369,7 +369,7 @@ const ConvertToWebPPage: React.FC = () => {
                             className="w-full hover:cursor-grab active:cursor-grabbing"
                         />
                     </div>
-                    <div className="border">
+                    <div className="">
                         <span className="block mb-1 font-medium">
                             Compatible File Types:
                         </span>
@@ -389,7 +389,7 @@ const ConvertToWebPPage: React.FC = () => {
                     className="px-6 h-[150px] w-[350px]"
                 >
                     <div className="text-center text-lg font-inter flex justify-center items-center gap-2">
-                        Total Number of Files:
+                        Total Files:
                         <CountUp
                             from={0}
                             to={converted.length}
