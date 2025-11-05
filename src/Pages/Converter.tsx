@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Dexie, { type Table } from "dexie";
-import {Download, FileArchive, FileDown, LoaderCircle, Trash2, Upload } from "lucide-react";
+import { Download, FileArchive, FileDown, LoaderCircle, Trash2, Upload } from "lucide-react";
 import { useAlert } from "../Providers/Alerts";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 import { useGlobals } from "@/Providers/Globals";
 import { Card } from "@/components/ui/card";
 import CountUp from "@/components/CountUp";
+import InfoTooltip from "@/components/Infotooltip";
 // Define the structure of stored files
 interface ConvertedFile {
     id?: number;
@@ -45,6 +46,7 @@ const ConvertToWebPPage: React.FC = () => {
         }
     }));
     const [loading, setLoading] = useState(false);
+    const [clearLoading, setClearLoading] = useState(false);
     const [quality, setQuality] = useState(85);
     const [zipping, setZipping] = useState(false);
     const { theme, onMobile } = useGlobals();
@@ -274,8 +276,10 @@ const ConvertToWebPPage: React.FC = () => {
     };
 
     const handleClear = async () => {
+        setClearLoading(true);
         await db.files.clear();
         setConverted([]);
+        setClearLoading(false);
     };
     const clearById = async (id?: number) => {
         if (!id) return;
@@ -358,7 +362,13 @@ const ConvertToWebPPage: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-center items-center gap-4 py-6">
                 <Card className="px-6 h-[150px] w-[350px] flex flex-col justify-center gap-2">
                     <div className="">
-                        <label className="block mb-1 font-medium">Quality: {quality}%</label>
+                        <div className="flex items-center gap-2 mb-2 justify-between align-center w-full">
+                            <label className="block font-medium class-inter">Quality: {quality}%</label>
+                            <InfoTooltip legend="Adjust the quality of the converted WebP images. Higher quality results in better image fidelity but larger file sizes. Recomended range is 70-85% for a good balance."
+                                iconSize={18}
+                            >
+                            </InfoTooltip>
+                        </div>
                         <input
                             disabled={loading}
                             type="range"
@@ -368,11 +378,19 @@ const ConvertToWebPPage: React.FC = () => {
                             onChange={(e) => setQuality(parseInt(e.target.value))}
                             className="w-full hover:cursor-grab active:cursor-grabbing"
                         />
+
                     </div>
                     <div className="">
-                        <span className="block mb-1 font-medium">
-                            Compatible File Types:
-                        </span>
+                        <div className="flex items-center gap-2 mb-2 justify-between align-center w-full">
+                            <span className="block font-medium">
+                                Compatible File Types:
+                            </span>
+                            <InfoTooltip legend="Files with these extensions can be converted to WebP format. Otther files are ignored during conversion."
+                                iconSize={18}
+                            >
+                            </InfoTooltip>
+                        </div>
+
                         <div className="flex items-center justify-center gap-1">
                             {
                                 availableExtensions.map((ext) => (
@@ -400,12 +418,11 @@ const ConvertToWebPPage: React.FC = () => {
                         />
                     </div>
                     <div className="flex justify-center gap-3 ">
-
                         <>
                             <button
                                 onClick={handleDownloadAll}
                                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition  disabled:bg-gray-400 disabled:text-gray-200 disabled:cursor-not-allowed"
-                                disabled={zipping || converted.length === 0 || loading}
+                                disabled={converted.length === 0 || loading || zipping || clearLoading}
                             >
                                 <FileDown size={18} />
                                 {zipping ? 'Preparing...' : 'Download All'}
@@ -414,11 +431,16 @@ const ConvertToWebPPage: React.FC = () => {
 
                             <button
                                 onClick={handleClear}
-                                disabled={converted.length === 0 || loading}
+                                disabled={converted.length === 0 || loading || zipping || clearLoading}
                                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-900 transition  disabled:bg-gray-400 disabled:text-gray-200 disabled:cursor-not-allowed"
                             >
-                                <Trash2 size={18} />
-                                Clear All
+
+                                {
+                                    clearLoading ? <> Clearing <LoaderCircle className="inline animate-spin ml-2" /></> : <>
+                                        <Trash2 size={18} />
+                                        Clear All
+                                    </>
+                                }
                             </button>
                         </>
 
