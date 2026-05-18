@@ -88,7 +88,7 @@ const Landing: React.FC = () => {
                     className="font-audiowide m-0 leading-none tracking-tight relative anim-fade-up-1"
                     style={{ fontSize: 'clamp(44px, 9vw, 88px)' }}
                 >
-                    mattedi<span style={{ color: '#ff9849' }}>works</span>
+                    mattedi<span style={{ color: '#F5961C' }}>works</span>
                 </h1>
 
                 {/* Eyebrow */}
@@ -100,7 +100,7 @@ const Landing: React.FC = () => {
                 <div
                     aria-hidden
                     className="w-10 h-px mb-9 relative anim-fade-up-2"
-                    style={{ backgroundColor: '#ff9849' }}
+                    style={{ backgroundColor: '#F5961C' }}
                 />
 
                 {/* Headline */}
@@ -112,7 +112,7 @@ const Landing: React.FC = () => {
                     }}
                 >
                     Sharp, focused web tools that work{' '}
-                    <em style={{ color: '#ff9849', fontStyle: 'italic' }}>instantly</em>{' '}
+                    <em style={{ color: '#F5961C', fontStyle: 'italic' }}>instantly</em>{' '}
                     in your browser.
                 </p>
 
@@ -130,11 +130,12 @@ const Landing: React.FC = () => {
                     onMouseLeave={() => setCtaHovered(false)}
                     className="relative flex items-center gap-2.5 px-8 py-4 font-audiowide text-sm tracking-wider anim-fade-up-5"
                     style={{
-                        backgroundColor: '#ff9849',
-                        color: '#ffffff',
+                        backgroundColor: '#F5961C',
+                        color: '#1B2F5E',
+                        borderRadius: '10px',
                         boxShadow: ctaHovered
-                            ? '0 8px 40px rgba(255,152,73,0.55)'
-                            : '0 4px 28px rgba(255,152,73,0.38)',
+                            ? '0 8px 40px rgba(245,150,28,0.55)'
+                            : '0 4px 28px rgba(245,150,28,0.38)',
                         transform: ctaHovered ? 'translateY(-3px)' : undefined,
                         transition: 'transform 0.18s ease, box-shadow 0.18s ease',
                     }}
@@ -165,10 +166,11 @@ const Landing: React.FC = () => {
                                     onMouseLeave={() => setHoveredTool(null)}
                                     className="relative flex flex-col p-8 border bg-[var(--card)] cursor-pointer outline-none"
                                     style={{
-                                        borderColor: hovered ? '#ff9849' : 'var(--border)',
+                                        borderColor: hovered ? '#F5961C' : 'var(--border)',
+                                        borderRadius: '16px',
                                         transform: hovered ? 'translateY(-6px)' : undefined,
                                         boxShadow: hovered
-                                            ? '0 16px 56px rgba(255,152,73,0.15), 0 0 0 1px #ff9849'
+                                            ? '0 16px 56px rgba(245,150,28,0.15), 0 0 0 1.5px #F5961C'
                                             : '0 2px 8px rgba(0,0,0,0.04)',
                                         transition:
                                             'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
@@ -176,13 +178,14 @@ const Landing: React.FC = () => {
                                 >
                                     {/* Format badge */}
                                     <span
-                                        className="absolute top-5 right-5 font-jetbrains text-[9px] tracking-[0.22em] uppercase px-2 py-0.5 border"
+                                        className="absolute top-5 right-5 font-jetbrains text-[9px] tracking-[0.22em] uppercase px-2.5 py-1 border"
                                         style={{
-                                            color: '#ff9849',
+                                            color: '#F5961C',
                                             borderColor: hovered
-                                                ? '#ff9849'
-                                                : 'rgba(255,152,73,0.4)',
-                                            backgroundColor: 'rgba(255,152,73,0.08)',
+                                                ? '#F5961C'
+                                                : 'rgba(245,150,28,0.4)',
+                                            backgroundColor: 'rgba(245,150,28,0.08)',
+                                            borderRadius: '6px',
                                             transition: 'border-color 0.2s ease',
                                         }}
                                     >
@@ -194,9 +197,10 @@ const Landing: React.FC = () => {
                                         className="flex items-center justify-center w-12 h-12 mb-5"
                                         style={{
                                             backgroundColor: hovered
-                                                ? 'rgba(255,152,73,0.2)'
-                                                : 'rgba(255,152,73,0.1)',
-                                            color: '#ff9849',
+                                                ? 'rgba(245,150,28,0.2)'
+                                                : 'rgba(245,150,28,0.1)',
+                                            color: '#F5961C',
+                                            borderRadius: '12px',
                                             transition: 'background-color 0.2s ease',
                                         }}
                                     >
@@ -215,7 +219,7 @@ const Landing: React.FC = () => {
                                     <div
                                         className="flex items-center gap-2 font-jetbrains text-xs tracking-[0.16em] uppercase"
                                         style={{
-                                            color: '#ff9849',
+                                            color: '#F5961C',
                                             transform: hovered ? 'translateX(5px)' : undefined,
                                             transition: 'transform 0.2s ease',
                                         }}
@@ -246,8 +250,9 @@ const Landing: React.FC = () => {
                                 <div
                                     className="flex items-center justify-center w-11 h-11"
                                     style={{
-                                        backgroundColor: 'rgba(255,152,73,0.12)',
-                                        color: '#ff9849',
+                                        backgroundColor: 'rgba(245,150,28,0.12)',
+                                        color: '#F5961C',
+                                        borderRadius: '12px',
                                     }}
                                 >
                                     <Icon size={20} strokeWidth={1.75} />
@@ -269,7 +274,7 @@ const Landing: React.FC = () => {
                 <div className="flex items-center gap-3">
                     <Logo className="h-5 w-5" style={{ color: 'var(--foreground)' }} />
                     <span className="font-audiowide text-xs text-[var(--muted-foreground)]">
-                        mattedi<span style={{ color: '#ff9849' }}>works</span>
+                        mattedi<span style={{ color: '#F5961C' }}>works</span>
                     </span>
                 </div>
 

@@ -106,6 +106,29 @@ body {
   font-family: 'Lato', sans-serif;
 }
 
+@theme {
+  --color-navy-50:   #f0f4fb;
+  --color-navy-100:  #d9e3f4;
+  --color-navy-200:  #b3c7e9;
+  --color-navy-300:  #7da1d4;
+  --color-navy-400:  #4a78bc;
+  --color-navy-500:  #2d5aa3;
+  --color-navy-600:  #1B2F5E;
+  --color-navy-700:  #162448;
+  --color-navy-800:  #111c38;
+  --color-navy-900:  #0c1428;
+
+  --color-orange-50:  #fef7ed;
+  --color-orange-100: #fdecd3;
+  --color-orange-200: #fad5a5;
+  --color-orange-300: #f7b86d;
+  --color-orange-400: #F5961C;
+  --color-orange-500: #e07d0a;
+  --color-orange-600: #b86008;
+
+  --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -192,6 +215,27 @@ button {
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position:  200% center; }
+}
+
+/* ── Custom scrollbar ───────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #F5961C;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #e07d0a;
+}
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #F5961C transparent;
 }
 
 /* Manual Cursor Control */

@@ -4,18 +4,21 @@ import { Download, Copy, Check } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { useGlobals } from '@/Providers/Globals';
 
-const ECL_LEVELS: { key: 'L' | 'M' | 'Q' | 'H'; pct: string; label: string }[] = [
-    { key: 'L', pct: '7%',  label: 'Low' },
-    { key: 'M', pct: '15%', label: 'Med' },
-    { key: 'Q', pct: '25%', label: 'Qtr' },
-    { key: 'H', pct: '30%', label: 'High' },
+const ORANGE = '#F5961C';
+const NAVY   = '#1B2F5E';
+
+const ECL_LEVELS: { key: 'L' | 'M' | 'Q' | 'H'; pct: string }[] = [
+    { key: 'L', pct: '7%'  },
+    { key: 'M', pct: '15%' },
+    { key: 'Q', pct: '25%' },
+    { key: 'H', pct: '30%' },
 ];
 
 const CORNERS = [
-    'top-2.5 left-2.5 border-t border-l',
-    'top-2.5 right-2.5 border-t border-r',
-    'bottom-2.5 left-2.5 border-b border-l',
-    'bottom-2.5 right-2.5 border-b border-r',
+    'top-3 left-3 border-t border-l',
+    'top-3 right-3 border-t border-r',
+    'bottom-3 left-3 border-b border-l',
+    'bottom-3 right-3 border-b border-r',
 ];
 
 const QRCodePage: React.FC = () => {
@@ -32,17 +35,14 @@ const QRCodePage: React.FC = () => {
     const [version, setVersion] = useState(0);
     const [error, setError]     = useState('');
     const [copied, setCopied]   = useState(false);
-    // Track hover state manually so we can override the global dark:text-white rule
-    const [dlHover, setDlHover]   = useState(false);
-    const [cpHover, setCpHover]   = useState(false);
+    const [dlHover, setDlHover] = useState(false);
+    const [cpHover, setCpHover] = useState(false);
 
-    // Sync QR defaults when theme changes
     useEffect(() => {
         setFg(theme === 'dark' ? '#ffffff' : '#1a1a1a');
         setBg(theme === 'dark' ? '#111111' : '#ffffff');
     }, [theme]);
 
-    // Generate QR SVG
     useEffect(() => {
         const value = text.trim();
         if (!value) {
@@ -106,15 +106,15 @@ const QRCodePage: React.FC = () => {
         setTimeout(() => setCopied(false), 1500);
     };
 
-    // Colours for the two action buttons — computed so inline style always wins
-    // over the global `button { dark:text-white }` rule.
-    const dlBg    = dlHover ? '#ff9849'               : 'var(--foreground)';
-    const dlBdr   = dlHover ? '#ff9849'               : 'var(--foreground)';
-    const dlColor = 'var(--background)';                 // always contrast on foreground bg
+    // Download button: orange on hover → navy text for contrast; foreground bg otherwise
+    const dlBg    = dlHover ? ORANGE              : 'var(--foreground)';
+    const dlBdr   = dlHover ? ORANGE              : 'var(--foreground)';
+    const dlColor = dlHover ? NAVY                : 'var(--background)';
 
-    const cpBg    = cpHover ? 'var(--foreground)'     : 'transparent';
+    // Copy button (ghost): foreground bg on hover → background text; transparent otherwise
+    const cpBg    = cpHover ? 'var(--foreground)' : 'transparent';
     const cpBdr   = 'var(--foreground)';
-    const cpColor = cpHover ? 'var(--background)'     : 'var(--foreground)';
+    const cpColor = cpHover ? 'var(--background)' : 'var(--foreground)';
 
     const sharedBtn = `flex items-center justify-center gap-2.5
         py-3.5 px-5 font-jetbrains text-xs tracking-[0.18em] uppercase cursor-pointer
@@ -126,7 +126,7 @@ const QRCodePage: React.FC = () => {
             <div className={`max-w-[1100px] mx-auto pb-16 pt-10 ${onMobile ? 'px-4' : 'px-7'}`}>
 
                 {/* ── Page header ─────────────────────────────── */}
-                <header className="flex items-end justify-between pb-5 border-b border-[var(--foreground)]">
+                <header className="flex items-end justify-between pb-5 border-b border-[var(--border)]">
                     <div className="flex items-end gap-4">
                         <Logo className="h-11 w-11 shrink-0" style={{ color: 'var(--foreground)' }} />
                         <div>
@@ -134,7 +134,7 @@ const QRCodePage: React.FC = () => {
                                 className="font-audiowide m-0 leading-none tracking-tight"
                                 style={{ fontSize: 'clamp(28px, 5vw, 52px)' }}
                             >
-                                QR <span style={{ color: '#ff9849' }}>Studio</span>
+                                QR <span style={{ color: ORANGE }}>Studio</span>
                             </h1>
                             <i className="font-lato text-sm text-[var(--muted-foreground)]">
                                 by mattediworks &copy;
@@ -143,7 +143,10 @@ const QRCodePage: React.FC = () => {
                     </div>
                     <div className="text-right font-jetbrains text-[10px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] leading-relaxed hidden md:block">
                         <div>
-                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#ff9849] mr-1.5 relative top-px" />
+                            <span
+                                className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 relative top-px"
+                                style={{ backgroundColor: ORANGE }}
+                            />
                             Static Generator
                         </div>
                         <div>v1.0 · svg export</div>
@@ -167,7 +170,7 @@ const QRCodePage: React.FC = () => {
                             Settings
                         </h2>
 
-                        {/* Content */}
+                        {/* Content textarea */}
                         <div className="mb-5">
                             <label className="flex justify-between items-baseline font-jetbrains text-[11px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] mb-2">
                                 <span>Content</span>
@@ -178,7 +181,8 @@ const QRCodePage: React.FC = () => {
                                 onChange={e => setText(e.target.value)}
                                 placeholder="URL, phone number, plain text, vCard…"
                                 spellCheck={false}
-                                className="w-full bg-[var(--card)] border border-[var(--foreground)] text-[var(--foreground)] p-3 font-jetbrains text-[13px] leading-[1.55] resize-y outline-none min-h-[88px] transition-all placeholder:text-[var(--muted-foreground)] focus:shadow-[3px_3px_0_var(--foreground)] focus:-translate-x-px focus:-translate-y-px"
+                                className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] p-3 font-jetbrains text-[13px] leading-[1.55] resize-y outline-none min-h-[88px] transition-all placeholder:text-[var(--muted-foreground)]"
+                                style={{ borderRadius: '8px' }}
                             />
                         </div>
 
@@ -188,7 +192,10 @@ const QRCodePage: React.FC = () => {
                                 <span>Error correction</span>
                                 <span className="text-[10px] normal-case">damage recovery</span>
                             </label>
-                            <div className="grid grid-cols-4 border border-[var(--foreground)]">
+                            <div
+                                className="grid grid-cols-4 border border-[var(--border)] overflow-hidden"
+                                style={{ borderRadius: '8px' }}
+                            >
                                 {ECL_LEVELS.map(l => {
                                     const active = ecl === l.key;
                                     return (
@@ -196,17 +203,19 @@ const QRCodePage: React.FC = () => {
                                             key={l.key}
                                             type="button"
                                             onClick={() => setEcl(l.key)}
-                                            className="border-r border-[var(--foreground)] last:border-r-0 py-3 font-jetbrains text-xs cursor-pointer transition-colors text-center"
+                                            className="border-r border-[var(--border)] last:border-r-0 py-3 font-jetbrains text-xs cursor-pointer transition-colors text-center"
                                             style={{
                                                 backgroundColor: active ? 'var(--foreground)' : 'var(--card)',
-                                                // inline style wins over global dark:text-white
                                                 color: active ? 'var(--background)' : 'var(--foreground)',
                                             }}
                                         >
                                             {l.key}
                                             <span
                                                 className="block text-[9px] tracking-wider mt-0.5"
-                                                style={{ color: active ? 'var(--background)' : 'var(--muted-foreground)', opacity: active ? 0.6 : 1 }}
+                                                style={{
+                                                    color: active ? 'var(--background)' : 'var(--muted-foreground)',
+                                                    opacity: active ? 0.6 : 1,
+                                                }}
                                             >
                                                 {l.pct}
                                             </span>
@@ -226,10 +235,13 @@ const QRCodePage: React.FC = () => {
                                     <label className="block font-jetbrains text-[11px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] mb-2">
                                         {label}
                                     </label>
-                                    <div className="flex items-center gap-2.5 border border-[var(--foreground)] bg-[var(--card)] p-1.5 pr-2.5">
+                                    <div
+                                        className="flex items-center gap-2.5 border border-[var(--border)] bg-[var(--card)] p-1.5 pr-2.5"
+                                        style={{ borderRadius: '8px' }}
+                                    >
                                         <span
-                                            className="w-[28px] h-[28px] border border-[var(--foreground)] relative overflow-hidden shrink-0"
-                                            style={{ background: value }}
+                                            className="w-[28px] h-[28px] border border-[var(--border)] relative overflow-hidden shrink-0"
+                                            style={{ background: value, borderRadius: '5px' }}
                                         >
                                             <input
                                                 type="color"
@@ -251,7 +263,7 @@ const QRCodePage: React.FC = () => {
 
                         {/* Sliders */}
                         {([
-                            { label: 'Quiet zone', hint: 'modules', min: 0, max: 10, value: margin, set: setMargin },
+                            { label: 'Quiet zone', hint: 'modules',    min: 0, max: 10, value: margin, set: setMargin },
                             { label: 'Scale',      hint: 'px / module', min: 2, max: 20, value: scale,  set: setScale  },
                         ] as const).map(({ label, hint, min, max, value, set }) => (
                             <div key={label} className="mb-5">
@@ -265,7 +277,7 @@ const QRCodePage: React.FC = () => {
                                         min={min} max={max} step={1}
                                         value={value}
                                         onChange={e => set(parseInt(e.target.value, 10))}
-                                        className="flex-1 cursor-pointer accent-[#ff9849]"
+                                        className="flex-1 cursor-pointer accent-orange-400"
                                     />
                                     <span className="font-jetbrains text-xs text-[var(--foreground)] min-w-[32px] text-right tabular-nums">
                                         {String(value).padStart(2, '0')}
@@ -283,13 +295,19 @@ const QRCodePage: React.FC = () => {
                         </h2>
 
                         {/* QR paper */}
-                        <div className="bg-[var(--card)] border border-[var(--foreground)] p-9 relative aspect-square flex items-center justify-center shadow-[6px_6px_0_var(--foreground)]">
+                        <div
+                            className="bg-[var(--card)] border border-[var(--border)] p-9 relative aspect-square flex items-center justify-center"
+                            style={{
+                                borderRadius: '16px 16px 0 0',
+                                boxShadow: '0 4px 32px rgba(0,0,0,0.08)',
+                            }}
+                        >
                             {CORNERS.map((cls, i) => (
-                                <span key={i} className={`absolute w-3.5 h-3.5 border-[var(--foreground)] pointer-events-none ${cls}`} />
+                                <span key={i} className={`absolute w-3.5 h-3.5 border-[var(--border)] pointer-events-none ${cls}`} />
                             ))}
                             <div className="w-full h-full flex items-center justify-center">
                                 {error ? (
-                                    <p className="text-center font-jetbrains text-xs p-4 leading-relaxed" style={{ color: '#ff9849' }}>
+                                    <p className="text-center font-jetbrains text-xs p-4 leading-relaxed" style={{ color: ORANGE }}>
                                         ⚠ {error}
                                     </p>
                                 ) : svgStr ? (
@@ -305,14 +323,23 @@ const QRCodePage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Stats bar */}
-                        <div className="grid grid-cols-3 border border-t-0 border-[var(--foreground)]">
+                        {/* Stats bar — rounded bottom, flush with QR paper */}
+                        <div
+                            className="grid grid-cols-3 border border-t-0 border-[var(--border)]"
+                            style={{ borderRadius: '0 0 12px 12px' }}
+                        >
                             {[
                                 { k: 'Version', v: version || '—', s: version ? '/40' : '' },
                                 { k: 'Modules', v: modules || '—', s: modules ? '²'  : '' },
                                 { k: 'Level',   v: ecl,           s: ''               },
-                            ].map(({ k, v, s }) => (
-                                <div key={k} className="border-r border-[var(--foreground)] last:border-r-0 p-3.5 bg-[var(--card)]">
+                            ].map(({ k, v, s }, idx, arr) => (
+                                <div
+                                    key={k}
+                                    className="border-r border-[var(--border)] last:border-r-0 p-3.5 bg-[var(--card)]"
+                                    style={{
+                                        borderRadius: idx === arr.length - 1 ? '0 0 12px 0' : idx === 0 ? '0 0 0 12px' : undefined,
+                                    }}
+                                >
                                     <div className="font-jetbrains text-[9px] tracking-[0.18em] uppercase text-[var(--muted-foreground)] mb-1.5">{k}</div>
                                     <div className="font-audiowide text-xl leading-none text-[var(--foreground)]">
                                         {v}
@@ -322,7 +349,7 @@ const QRCodePage: React.FC = () => {
                             ))}
                         </div>
 
-                        {/* Action buttons — inline style for color so global dark:text-white is overridden */}
+                        {/* Action buttons */}
                         <div className="flex gap-3 mt-4">
                             <button
                                 onClick={download}
@@ -334,8 +361,9 @@ const QRCodePage: React.FC = () => {
                                     backgroundColor: dlBg,
                                     borderColor: dlBdr,
                                     color: dlColor,
-                                    transform: (dlHover && svgStr) ? 'translate(-2px,-2px)' : undefined,
-                                    boxShadow: (dlHover && svgStr) ? '4px 4px 0 var(--foreground)' : undefined,
+                                    borderRadius: '8px',
+                                    transform: (dlHover && svgStr) ? 'translateY(-2px)' : undefined,
+                                    boxShadow: (dlHover && svgStr) ? `0 6px 20px rgba(245,150,28,0.35)` : undefined,
                                 }}
                             >
                                 <Download size={13} />
@@ -351,8 +379,9 @@ const QRCodePage: React.FC = () => {
                                     backgroundColor: cpBg,
                                     borderColor: cpBdr,
                                     color: cpColor,
-                                    transform: (cpHover && svgStr) ? 'translate(-2px,-2px)' : undefined,
-                                    boxShadow: (cpHover && svgStr) ? '4px 4px 0 var(--foreground)' : undefined,
+                                    borderRadius: '8px',
+                                    transform: (cpHover && svgStr) ? 'translateY(-2px)' : undefined,
+                                    boxShadow: (cpHover && svgStr) ? '0 4px 12px rgba(0,0,0,0.12)' : undefined,
                                 }}
                             >
                                 {copied ? <Check size={13} /> : <Copy size={13} />}
@@ -363,7 +392,7 @@ const QRCodePage: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                <footer className="mt-14 pt-4 border-t border-[var(--foreground)] flex justify-between font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)]">
+                <footer className="mt-14 pt-4 border-t border-[var(--border)] flex justify-between font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)]">
                     <span>&copy; Mattediworks</span>
                     <span>No data leaves this page</span>
                 </footer>

@@ -129,8 +129,9 @@ const Header: React.FC = () => {
                                     onClick={() => Navigate(path)}
                                     className="px-3 py-1 transition-colors cursor-pointer border"
                                     style={{
-                                        borderColor: active ? '#ff9849' : 'transparent',
-                                        color: active ? '#ff9849' : 'var(--muted-foreground)',
+                                        borderColor: active ? '#F5961C' : 'transparent',
+                                        color: active ? '#F5961C' : 'var(--muted-foreground)',
+                                        borderRadius: '6px',
                                     }}
                                 >
                                     {label}
