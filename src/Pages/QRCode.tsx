@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import qrcode from 'qrcode-generator';
 import { Download, Copy, Check } from 'lucide-react';
-import Logo from '@/components/Logo';
 import { useGlobals } from '@/Providers/Globals';
 
 const ORANGE = '#F5961C';
@@ -125,39 +124,19 @@ const QRCodePage: React.FC = () => {
         <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
             <div className={`max-w-[1100px] mx-auto pb-16 pt-10 ${onMobile ? 'px-4' : 'px-7'}`}>
 
-                {/* ── Page header ─────────────────────────────── */}
-                <header className="flex items-end justify-between pb-5 border-b border-[var(--border)]">
-                    <div className="flex items-end gap-4">
-                        <Logo className="h-11 w-11 shrink-0" style={{ color: 'var(--foreground)' }} />
-                        <div>
-                            <h1
-                                className="font-audiowide m-0 leading-none tracking-tight"
-                                style={{ fontSize: 'clamp(28px, 5vw, 52px)' }}
-                            >
-                                QR <span style={{ color: ORANGE }}>Studio</span>
-                            </h1>
-                            <i className="font-lato text-sm text-[var(--muted-foreground)]">
-                                by mattediworks &copy;
-                            </i>
-                        </div>
+                {/* ── Page title bar ───────────────────────────── */}
+                <div className="flex items-center justify-between py-3 mb-1 border-b border-[var(--border)]">
+                    <h1 className="font-audiowide text-2xl leading-none">
+                        QR <span style={{ color: ORANGE }}>Studio</span>
+                    </h1>
+                    <div className="flex items-center gap-3 font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)] hidden sm:flex">
+                        <span>SVG export</span>
+                        <span
+                            className="w-px h-3 shrink-0"
+                            style={{ backgroundColor: 'var(--border)' }}
+                        />
+                        <span>Client-side only</span>
                     </div>
-                    <div className="text-right font-jetbrains text-[10px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] leading-relaxed hidden md:block">
-                        <div>
-                            <span
-                                className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 relative top-px"
-                                style={{ backgroundColor: ORANGE }}
-                            />
-                            Static Generator
-                        </div>
-                        <div>v1.0 · svg export</div>
-                    </div>
-                </header>
-
-                {/* ── Ledger bar ───────────────────────────────── */}
-                <div className="flex justify-between items-center py-2 border-b border-[var(--border)] font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)]">
-                    <span>Output · SVG</span>
-                    <span className="hidden sm:inline">Encoding · UTF-8</span>
-                    <span>Privacy · Client-side only</span>
                 </div>
 
                 {/* ── Main grid ────────────────────────────────── */}
@@ -393,7 +372,7 @@ const QRCodePage: React.FC = () => {
 
                 {/* Footer */}
                 <footer className="mt-14 pt-4 border-t border-[var(--border)] flex justify-between font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)]">
-                    <span>&copy; Mattediworks</span>
+                    <span>&copy; MattediWorks</span>
                     <span>No data leaves this page</span>
                 </footer>
             </div>

@@ -20,16 +20,10 @@ const NAV_ITEMS = [
     { label: 'QR Studio', path: '/qrcode' },
 ];
 
-const PAGE_TITLE: Record<string, string> = {
-    '/converter': 'Image Converter',
-    '/qrcode':    'QR Studio',
-};
-
 const Header: React.FC = () => {
     const Navigate = useNavigate();
     const location = useLocation();
     const { onMobile } = useGlobals();
-    const toolTitle = PAGE_TITLE[location.pathname] ?? null;
     // const fireConfetti = () => {
     //     const duration = 5 * 1000;
     //     const animationEnd = Date.now() + duration;
@@ -97,26 +91,14 @@ const Header: React.FC = () => {
             <div className='flex flex-row justify-between items-center gap-2 w-full max-w-[1200px] '>
                 {
                     <div
-                        className="flex items-end gap-2 hover:cursor-pointer"
+                        className="flex items-center gap-2 hover:cursor-pointer"
                         onClick={() => Navigate('/')}
                     >
-                        <Logo className='h-7 w-7 shrink-0' style={{ color: 'var(--foreground)' }} />
-                        {toolTitle ? (
-                            <div className="flex flex-col items-start leading-none">
-                                <span className='font-audiowide text-xl text-[var(--foreground)]'>
-                                    {toolTitle}
-                                </span>
-                                {!onMobile && (
-                                    <i className='font-lato text-xs text-[var(--muted-foreground)]'>
-                                        by mattediworks &copy;
-                                    </i>
-                                )}
-                            </div>
-                        ) : (
-                            <span className='font-audiowide text-xl text-[var(--foreground)]'>
-                                mattedi<span style={{ color: '#ff9849' }}>works</span>
-                            </span>
-                        )}
+                        <Logo className='h-6 w-6 shrink-0' style={{ color: 'var(--foreground)' }} />
+                        <span className='font-sansation text-xl leading-none text-[var(--foreground)]'>
+                            <span style={{ fontWeight: 700 }}>MATTEDI</span>
+                            <span style={{ fontWeight: 400, color: '#F5961C' }}>WORKS</span>
+                        </span>
                     </div>
                 }
                 {!onMobile && (
@@ -182,7 +164,7 @@ const Header: React.FC = () => {
                             <div className='flex w-full justify-end'>Version 1.0</div>
                         </SheetDescription>
                         <SheetFooter>
-                            Designed by Mattediworks &copy;
+                            Designed by MattediWorks &copy;
                         </SheetFooter>
                     </SheetHeader>
                 </SheetContent>

@@ -8,7 +8,7 @@
       "Bash(Format-Table -AutoSize)",
       "Bash(grep -E '\\\\.\\(tsx|ts\\)$')",
       "Bash(npx tsc *)",
-      "WebFetch(domain:mattediworks.com)"
+      "WebFetch(domain:MattediWorks.com)"
     ]
   }
 }

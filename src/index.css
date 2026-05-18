@@ -3,6 +3,52 @@
 @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poiret+One&family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap');
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Sansation (brand / logo font) ─────────────────── */
+/* Bold & Regular served from /public so they're always reachable */
+@font-face {
+  font-family: 'Sansation';
+  src: url('/fonts/Sansation_Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sansation';
+  src: url('/fonts/Sansation_Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+/* Remaining weights still bundled via Vite */
+@font-face {
+  font-family: 'Sansation';
+  src: url('./assets/newlogo/Sansation_Bold_Italic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sansation';
+  src: url('./assets/newlogo/Sansation_Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sansation';
+  src: url('./assets/newlogo/Sansation_Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sansation';
+  src: url('./assets/newlogo/Sansation_Light_Italic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
 
 :root {
   --radius: 0.65rem;
@@ -190,6 +236,10 @@ button {
 
 .font-jetbrains {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.font-sansation {
+  font-family: 'Sansation', 'Inter', sans-serif;
 }
 
 .font-quantico {

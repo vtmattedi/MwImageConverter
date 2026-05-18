@@ -85,14 +85,15 @@ const Landing: React.FC = () => {
 
                 {/* Brand name */}
                 <h1
-                    className="font-audiowide m-0 leading-none tracking-tight relative anim-fade-up-1"
+                    className="font-sansation m-0 leading-none relative anim-fade-up-1"
                     style={{ fontSize: 'clamp(44px, 9vw, 88px)' }}
                 >
-                    mattedi<span style={{ color: '#F5961C' }}>works</span>
+                    <span style={{ fontWeight: 700 }}>MATTEDI</span>
+                    <span style={{ fontWeight: 400, color: '#F5961C' }}>WORKS</span>
                 </h1>
 
                 {/* Eyebrow */}
-                <p className="font-jetbrains text-[10px] tracking-[0.42em] uppercase text-[var(--muted-foreground)] mt-3 mb-7 relative anim-fade-up-2">
+                <p className="font-sansation text-base tracking-[0.25em] uppercase text-[var(--muted-foreground)] mt-3 mb-7 relative anim-fade-up-2">
                     web utilities
                 </p>
 
@@ -148,7 +149,7 @@ const Landing: React.FC = () => {
             {/* ── Tools ────────────────────────────────────────── */}
             <section id="tools" className="px-6 pb-24">
                 <div className="max-w-[960px] mx-auto">
-                    <p className="font-jetbrains text-[10px] tracking-[0.38em] uppercase text-[var(--muted-foreground)] text-center mb-10">
+                    <p className="font-sansation text-base tracking-[0.2em] uppercase text-[var(--muted-foreground)] text-center mb-10">
                         Available now
                     </p>
 
@@ -236,31 +237,31 @@ const Landing: React.FC = () => {
 
             {/* ── Pillars ─────────────────────────────────────── */}
             <section
-                className="border-t border-[var(--border)] px-6 py-16"
+                className="border-t border-[var(--border)] px-6 py-24"
                 style={{ backgroundColor: 'var(--card)' }}
             >
                 <div className="max-w-[960px] mx-auto">
-                    <p className="font-jetbrains text-[10px] tracking-[0.38em] uppercase text-[var(--muted-foreground)] text-center mb-14">
+                    <p className="font-sansation text-base tracking-[0.2em] uppercase text-[var(--muted-foreground)] text-center mb-16">
                         Why it works
                     </p>
 
-                    <div className={`grid gap-10 ${onMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                    <div className={`grid gap-14 ${onMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
                         {PILLARS.map(({ icon: Icon, label, desc }) => (
-                            <div key={label} className="flex flex-col gap-4">
+                            <div key={label} className="flex flex-col gap-5">
                                 <div
-                                    className="flex items-center justify-center w-11 h-11"
+                                    className="flex items-center justify-center w-16 h-16"
                                     style={{
                                         backgroundColor: 'rgba(245,150,28,0.12)',
                                         color: '#F5961C',
-                                        borderRadius: '12px',
+                                        borderRadius: '16px',
                                     }}
                                 >
-                                    <Icon size={20} strokeWidth={1.75} />
+                                    <Icon size={30} strokeWidth={1.5} />
                                 </div>
-                                <h3 className="font-audiowide text-sm text-[var(--foreground)]">
+                                <h3 className="font-audiowide text-lg text-[var(--foreground)]">
                                     {label}
                                 </h3>
-                                <p className="font-lato text-sm text-[var(--muted-foreground)] leading-relaxed">
+                                <p className="font-lato text-base text-[var(--muted-foreground)] leading-relaxed">
                                     {desc}
                                 </p>
                             </div>
@@ -271,10 +272,11 @@ const Landing: React.FC = () => {
 
             {/* ── Footer ──────────────────────────────────────── */}
             <footer className="border-t border-[var(--border)] px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                     <Logo className="h-5 w-5" style={{ color: 'var(--foreground)' }} />
-                    <span className="font-audiowide text-xs text-[var(--muted-foreground)]">
-                        mattedi<span style={{ color: '#F5961C' }}>works</span>
+                    <span className="font-sansation text-sm text-[var(--muted-foreground)] leading-none">
+                        <span style={{ fontWeight: 700 }}>Mattedi</span>
+                        <span style={{ fontWeight: 400, color: '#F5961C' }}>works</span>
                     </span>
                 </div>
 
