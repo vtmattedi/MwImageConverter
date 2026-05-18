@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/Users/Vity1/Documents/'New folder'/MIC && find . -type f -name \"*.html\" -o -name \"*.htm\" | head -20)",
+      "Read(//c/c/Users/Vity1/Documents/New folder/**)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Vity1\\\\Documents\\\\New folder\\\\MIC\" -Recurse -Depth 2)",
+      "Bash(Select-Object FullName)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(grep -E '\\\\.\\(tsx|ts\\)$')",
+      "Bash(npx tsc *)",
+      "WebFetch(domain:mattediworks.com)"
+    ]
+  }
+}

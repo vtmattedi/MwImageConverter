@@ -1,11 +1,8 @@
 import React from 'react';
-import { Images } from 'lucide-react';
-// import ThemeSelector from './ThemeSelector';
-// import confetti from 'canvas-confetti';
-// import { MenuIcon } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import ThemeSelector from './ThemeSelector';
 import { useGlobals } from '@/Providers/Globals';
+import Logo from './Logo';
 // import {
 //     Sheet,
 //     SheetContent,
@@ -18,9 +15,15 @@ import { useGlobals } from '@/Providers/Globals';
 
 // import { useLocation } from 'react-router-dom';
 // import { useAlert } from '@/Providers/Alerts';
+const NAV_ITEMS = [
+    { label: 'Converter', path: '/' },
+    { label: 'QR Studio', path: '/qrcode' },
+];
+
 const Header: React.FC = () => {
     const Navigate = useNavigate();
-    const {onMobile } = useGlobals();
+    const location = useLocation();
+    const { onMobile } = useGlobals();
     // const fireConfetti = () => {
     //     const duration = 5 * 1000;
     //     const animationEnd = Date.now() + duration;
@@ -97,10 +100,34 @@ const Header: React.FC = () => {
                             alignItems: 'flex-end',
 
                         }}>
-                        <span className='font-audiowide text-2xl flex gap-1'> <Images /> Image Converter</span>
+                        <span className='font-audiowide text-2xl flex gap-1 items-center'>
+                            <Logo className='h-7 w-7 shrink-0' style={{ color: 'var(--foreground)' }} />
+                            Image Converter
+                        </span>
                         <i className='font-lato text-sm'>by mattediworks &copy;</i>
                     </div>
                 }
+                {!onMobile && (
+                    <nav className="flex items-center gap-1 font-mono text-xs tracking-widest uppercase">
+                        {NAV_ITEMS.map(({ label, path }) => {
+                            const active = location.pathname === path || (path === '/' && location.pathname === '');
+                            return (
+                                <button
+                                    key={path}
+                                    onClick={() => Navigate(path)}
+                                    className="px-3 py-1 transition-colors cursor-pointer border"
+                                    style={{
+                                        borderColor: active ? '#ff9849' : 'transparent',
+                                        color: active ? '#ff9849' : 'var(--muted-foreground)',
+                                    }}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </nav>
+                )}
+
                 <div className={`flex items-center ${onMobile ? "gap-1 flex-col" : "gap-6"}`}>
                     <ThemeSelector />
                     <div className={`flex gap-1 text-2xl ${onMobile ? "gap-1" : "gap-2"}`} style={{ color: 'var(--text-secondary)' }}>

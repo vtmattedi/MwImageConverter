@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QR Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+
+<style>
+  :root {
+    --bg: #efe9dc;
+    --paper: #fbf7ec;
+    --ink: #1a1a1a;
+    --ink-soft: #595550;
+    --ink-faint: #a8a097;
+    --rule: #1a1a1a;
+    --accent: #c0392b;
+    --accent-soft: #e8d4cf;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fraunces', Georgia, serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(26,26,26,0.06) 1px, transparent 0);
+    background-size: 18px 18px;
+  }
+  .mono {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-feature-settings: "ss01" on, "ss02" on;
+  }
+  #root { width: 100%; }
+
+  .frame {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 28px 64px;
+  }
+  header.brand {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-variation-settings: "opsz" 144;
+    font-size: clamp(40px, 6vw, 64px);
+    line-height: 0.9;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .brand h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .brand .meta {
+    text-align: right;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .brand .meta .dot {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+
+  .ledger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 48px;
+    padding-top: 40px;
+  }
+  @media (max-width: 820px) {
+    .grid { grid-template-columns: 1fr; gap: 36px; }
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-title::before {
+    content: "";
+    width: 22px;
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .field { margin-bottom: 22px; }
+  label.lbl {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  label.lbl .hint {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    text-transform: none;
+  }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    resize: vertical;
+    outline: none;
+    transition: box-shadow 120ms ease;
+  }
+  textarea:focus, input[type="text"]:focus {
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: translate(-1px, -1px);
+  }
+  textarea { min-height: 92px; }
+
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--ink);
+    background: var(--paper);
+  }
+  .seg button {
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--ink);
+    padding: 12px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all 120ms ease;
+    position: relative;
+  }
+  .seg button:last-child { border-right: none; }
+  .seg button .pct {
+    display: block;
+    font-size: 9px;
+    color: var(--ink-faint);
+    margin-top: 3px;
+    letter-spacing: 0.1em;
+  }
+  .seg button:hover { background: rgba(26,26,26,0.05); }
+  .seg button.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .seg button.active .pct { color: rgba(251,247,236,0.55); }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    padding: 6px 10px 6px 6px;
+  }
+  .swatch {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .swatch input {
+    position: absolute;
+    inset: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    border: none;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .swatch-row input[type="text"] {
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+    font-size: 12px;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .slider-row { display: flex; align-items: center; gap: 14px; }
+  .slider-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 1px;
+    background: var(--ink);
+    outline: none;
+  }
+  .slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    border-radius: 0;
+    transition: transform 100ms ease;
+  }
+  .slider-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .slider-row input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    border-radius: 0;
+  }
+  .slider-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    min-width: 42px;
+    text-align: right;
+    color: var(--ink);
+  }
+
+  /* Right panel — the QR preview */
+  .stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .qr-paper {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 36px;
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .qr-paper::before, .qr-paper::after,
+  .corner-tl, .corner-tr, .corner-bl, .corner-br {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+  }
+  .corner-tl { top: 10px; left: 10px; border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+  .corner-tr { top: 10px; right: 10px; border-top: 1px solid var(--ink); border-right: 1px solid var(--ink); }
+  .corner-bl { bottom: 10px; left: 10px; border-bottom: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+  .corner-br { bottom: 10px; right: 10px; border-bottom: 1px solid var(--ink); border-right: 1px solid var(--ink); }
+
+  .qr-host {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-host svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .qr-empty {
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+  .qr-error {
+    text-align: center;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 16px;
+    line-height: 1.6;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--ink);
+    border-top: none;
+    margin-top: 0;
+  }
+  .stat {
+    padding: 14px 16px;
+    border-right: 1px solid var(--ink);
+    background: var(--paper);
+  }
+  .stat:last-child { border-right: none; }
+  .stat .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .stat .v {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: "opsz" 144;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .stat .v small {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 4px;
+    font-weight: 400;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .btn {
+    flex: 1;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 140ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .btn:disabled {
+    background: var(--ink-faint);
+    border-color: var(--ink-faint);
+    cursor: not-allowed;
+  }
+  .btn.ghost {
+    flex: 0 0 auto;
+    background: transparent;
+    color: var(--ink);
+  }
+  .btn.ghost:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .btn svg { width: 14px; height: 14px; }
+
+  .footnote {
+    margin-top: 56px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* tiny entrance */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .rise { animation: rise 480ms ease both; }
+  .rise.d1 { animation-delay: 60ms; }
+  .rise.d2 { animation-delay: 140ms; }
+  .rise.d3 { animation-delay: 220ms; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+const ECL_LEVELS = [
+  { key: 'L', pct: '7%' },
+  { key: 'M', pct: '15%' },
+  { key: 'Q', pct: '25%' },
+  { key: 'H', pct: '30%' },
+];
+
+function App() {
+  const [text, setText] = useState('https://anthropic.com');
+  const [ecl, setEcl] = useState('M');
+  const [fg, setFg] = useState('#1a1a1a');
+  const [bg, setBg] = useState('#fbf7ec');
+  const [margin, setMargin] = useState(2);
+  const [scale, setScale] = useState(8); // pixels per module → controls SVG resolution
+  const [svg, setSvg] = useState('');
+  const [modules, setModules] = useState(0);
+  const [version, setVersion] = useState(0);
+  const [error, setError] = useState('');
+
+  const hostRef = useRef(null);
+
+  useEffect(() => {
+    const value = text.trim();
+    if (!value) {
+      setSvg('');
+      setError('');
+      setModules(0);
+      setVersion(0);
+      return;
+    }
+    try {
+      if (typeof window.qrcode !== 'function') {
+        setError('QR library failed to load. Check your network.');
+        return;
+      }
+      // typeNumber = 0 means auto-select smallest version that fits
+      const qr = window.qrcode(0, ecl);
+      qr.addData(value);
+      qr.make();
+
+      const count = qr.getModuleCount();
+      const ver = (count - 17) / 4; // QR module count = 17 + 4 * version
+      const sizePx = (count + margin * 2) * scale;
+
+      // Build one path with all dark modules — smallest output
+      let path = '';
+      for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+          if (qr.isDark(r, c)) {
+            const x = (c + margin) * scale;
+            const y = (r + margin) * scale;
+            path += `M${x},${y}h${scale}v${scale}h-${scale}z`;
+          }
+        }
+      }
+
+      const svgStr =
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sizePx} ${sizePx}" width="${sizePx}" height="${sizePx}" shape-rendering="crispEdges">` +
+        `<rect width="${sizePx}" height="${sizePx}" fill="${bg}"/>` +
+        `<path d="${path}" fill="${fg}"/>` +
+        `</svg>`;
+
+      setSvg(svgStr);
+      setVersion(ver);
+      setModules(count);
+      setError('');
+    } catch (e) {
+      setError(e.message || 'Failed to generate QR.');
+      setSvg('');
+      setModules(0);
+      setVersion(0);
+    }
+  }, [text, ecl, fg, bg, margin, scale]);
+
+  const byteLength = useMemo(() => new TextEncoder().encode(text).length, [text]);
+
+  const download = () => {
+    if (!svg) return;
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `qrcode-${Date.now()}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const copySvg = async () => {
+    if (!svg) return;
+    try {
+      await navigator.clipboard.writeText(svg);
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  return (
+    <div className="frame">
+      <header className="brand rise">
+        <h1>QR <em>Studio</em></h1>
+        <div className="meta">
+          <div><span className="dot"></span>Static Generator</div>
+          <div className="mono">v1.0 / svg export</div>
+        </div>
+      </header>
+
+      <div className="ledger rise d1">
+        <span>File · type=image/svg+xml</span>
+        <span>Encoding · UTF-8</span>
+        <span>Standard · ISO/IEC 18004</span>
+      </div>
+
+      <div className="grid">
+        {/* ── controls ─────────────────────────────────── */}
+        <section className="rise d2">
+          <h2 className="panel-title">Composition</h2>
+
+          <div className="field">
+            <label className="lbl" htmlFor="content">
+              <span>Content</span>
+              <span className="hint">{byteLength} bytes</span>
+            </label>
+            <textarea
+              id="content"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Paste a URL, a phone number, plain text, vCard…"
+              spellCheck="false"
+            />
+          </div>
+
+          <div className="field">
+            <label className="lbl">
+              <span>Error correction</span>
+              <span className="hint">recoverable damage</span>
+            </label>
+            <div className="seg">
+              {ECL_LEVELS.map((l) => (
+                <button
+                  key={l.key}
+                  type="button"
+                  className={ecl === l.key ? 'active' : ''}
+                  onClick={() => setEcl(l.key)}
+                >
+                  {l.key}
+                  <span className="pct">{l.pct}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="field">
+              <label className="lbl"><span>Foreground</span></label>
+              <div className="swatch-row">
+                <span className="swatch" style={{ background: fg }}>
+                  <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} />
+                </span>
+                <input
+                  type="text"
+                  className="mono"
+                  value={fg}
+                  onChange={(e) => setFg(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="field">
+              <label className="lbl"><span>Background</span></label>
+              <div className="swatch-row">
+                <span className="swatch" style={{ background: bg }}>
+                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} />
+                </span>
+                <input
+                  type="text"
+                  className="mono"
+                  value={bg}
+                  onChange={(e) => setBg(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="lbl">
+              <span>Quiet zone</span>
+              <span className="hint">modules of margin</span>
+            </label>
+            <div className="slider-row">
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="1"
+                value={margin}
+                onChange={(e) => setMargin(parseInt(e.target.value, 10))}
+              />
+              <span className="slider-val">{margin.toString().padStart(2, '0')}</span>
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="lbl">
+              <span>Scale</span>
+              <span className="hint">pixels per module</span>
+            </label>
+            <div className="slider-row">
+              <input
+                type="range"
+                min="2"
+                max="20"
+                step="1"
+                value={scale}
+                onChange={(e) => setScale(parseInt(e.target.value, 10))}
+              />
+              <span className="slider-val">{scale.toString().padStart(2, '0')}</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── preview ──────────────────────────────────── */}
+        <section className="stage rise d3">
+          <h2 className="panel-title">Proof</h2>
+
+          <div className="qr-paper">
+            <span className="corner-tl"></span>
+            <span className="corner-tr"></span>
+            <span className="corner-bl"></span>
+            <span className="corner-br"></span>
+            <div
+              className="qr-host"
+              ref={hostRef}
+            >
+              {error ? (
+                <div className="qr-error">⚠ {error}</div>
+              ) : svg ? (
+                <div
+                  style={{ width: '100%', height: '100%', display: 'flex' }}
+                  dangerouslySetInnerHTML={{ __html: svg }}
+                />
+              ) : (
+                <div className="qr-empty">— enter content —</div>
+              )}
+            </div>
+          </div>
+
+          <div className="stats">
+            <div className="stat">
+              <div className="k">Version</div>
+              <div className="v">{version || '—'}<small>/40</small></div>
+            </div>
+            <div className="stat">
+              <div className="k">Modules</div>
+              <div className="v">{modules || '—'}<small>{modules ? `²` : ''}</small></div>
+            </div>
+            <div className="stat">
+              <div className="k">Level</div>
+              <div className="v">{ecl}</div>
+            </div>
+          </div>
+
+          <div className="actions">
+            <button className="btn" onClick={download} disabled={!svg}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+                <path d="M12 3v13M6 11l6 6 6-6M4 21h16" />
+              </svg>
+              Download SVG
+            </button>
+            <button className="btn ghost" onClick={copySvg} disabled={!svg} title="Copy SVG source">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+                <rect x="8" y="8" width="13" height="13" />
+                <path d="M16 8V3H3v13h5" />
+              </svg>
+              Copy
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <footer className="footnote">
+        <span>© Plate-pressed in your browser</span>
+        <span>No data leaves this page</span>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

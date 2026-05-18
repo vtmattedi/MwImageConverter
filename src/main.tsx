@@ -8,12 +8,20 @@ import Layout from './Layout.tsx';
 import { GlobalProvider } from './Providers/Globals.tsx';
 import { AlertProvider } from './Providers/Alerts.tsx';
 import Converter from './Pages/Converter.tsx';
+import QRCodePage from './Pages/QRCode.tsx';
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout><Converter /></Layout>,
+  },
+  {
+    path: "/qrcode",
+    element: <Layout><QRCodePage /></Layout>,
+  },
   {
     path: "*",
     element: <Layout><Converter /></Layout>,
   },
-
 ]);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
