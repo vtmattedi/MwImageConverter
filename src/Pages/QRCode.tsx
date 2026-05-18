@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import qrcode from 'qrcode-generator';
-import { Download, Copy, Check } from 'lucide-react';
+import { Download, ImageDown, Copy, Check } from 'lucide-react';
 import { useGlobals } from '@/Providers/Globals';
 
 const ORANGE = '#F5961C';
@@ -34,8 +34,9 @@ const QRCodePage: React.FC = () => {
     const [version, setVersion] = useState(0);
     const [error, setError]     = useState('');
     const [copied, setCopied]   = useState(false);
-    const [dlHover, setDlHover] = useState(false);
-    const [cpHover, setCpHover] = useState(false);
+    const [dlHover, setDlHover]   = useState(false);
+    const [pngHover, setPngHover] = useState(false);
+    const [cpHover, setCpHover]   = useState(false);
 
     useEffect(() => {
         setFg(theme === 'dark' ? '#ffffff' : '#1a1a1a');
@@ -105,10 +106,46 @@ const QRCodePage: React.FC = () => {
         setTimeout(() => setCopied(false), 1500);
     };
 
+    const downloadPng = () => {
+        if (!svgStr) return;
+        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl  = URL.createObjectURL(svgBlob);
+        const img     = new Image();
+        img.onload = () => {
+            // Render at 2× for sharper PNGs at low scale settings
+            const size   = img.naturalWidth;
+            const canvas = document.createElement('canvas');
+            canvas.width  = size * 2;
+            canvas.height = size * 2;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { URL.revokeObjectURL(svgUrl); return; }
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(svgUrl);
+            canvas.toBlob(pngBlob => {
+                if (!pngBlob) return;
+                const pngUrl = URL.createObjectURL(pngBlob);
+                const a      = document.createElement('a');
+                a.href       = pngUrl;
+                a.download   = `qrcode-${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(pngUrl);
+            }, 'image/png');
+        };
+        img.src = svgUrl;
+    };
+
     // Download button: orange on hover → navy text for contrast; foreground bg otherwise
     const dlBg    = dlHover ? ORANGE              : 'var(--foreground)';
     const dlBdr   = dlHover ? ORANGE              : 'var(--foreground)';
     const dlColor = dlHover ? NAVY                : 'var(--background)';
+
+    // PNG button (ghost): same ghost treatment as Copy
+    const pngBg    = pngHover ? 'var(--foreground)' : 'transparent';
+    const pngBdr   = 'var(--foreground)';
+    const pngColor = pngHover ? 'var(--background)' : 'var(--foreground)';
 
     // Copy button (ghost): foreground bg on hover → background text; transparent otherwise
     const cpBg    = cpHover ? 'var(--foreground)' : 'transparent';
@@ -130,7 +167,7 @@ const QRCodePage: React.FC = () => {
                         QR <span style={{ color: ORANGE }}>Studio</span>
                     </h1>
                     <div className="flex items-center gap-3 font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)] hidden sm:flex">
-                        <span>SVG export</span>
+                        <span>SVG &amp; PNG export</span>
                         <span
                             className="w-px h-3 shrink-0"
                             style={{ backgroundColor: 'var(--border)' }}
@@ -330,6 +367,7 @@ const QRCodePage: React.FC = () => {
 
                         {/* Action buttons */}
                         <div className="flex gap-3 mt-4">
+                            {/* Primary: Download SVG */}
                             <button
                                 onClick={download}
                                 disabled={!svgStr}
@@ -342,18 +380,40 @@ const QRCodePage: React.FC = () => {
                                     color: dlColor,
                                     borderRadius: '8px',
                                     transform: (dlHover && svgStr) ? 'translateY(-2px)' : undefined,
-                                    boxShadow: (dlHover && svgStr) ? `0 6px 20px rgba(245,150,28,0.35)` : undefined,
+                                    boxShadow: (dlHover && svgStr) ? '0 6px 20px rgba(245,150,28,0.35)' : undefined,
                                 }}
                             >
                                 <Download size={13} />
-                                Download SVG
+                                SVG
                             </button>
+
+                            {/* Secondary: Download PNG */}
+                            <button
+                                onClick={downloadPng}
+                                disabled={!svgStr}
+                                onMouseEnter={() => setPngHover(true)}
+                                onMouseLeave={() => setPngHover(false)}
+                                className={`flex-1 ${sharedBtn}`}
+                                style={{
+                                    backgroundColor: pngBg,
+                                    borderColor: pngBdr,
+                                    color: pngColor,
+                                    borderRadius: '8px',
+                                    transform: (pngHover && svgStr) ? 'translateY(-2px)' : undefined,
+                                    boxShadow: (pngHover && svgStr) ? '0 4px 12px rgba(0,0,0,0.12)' : undefined,
+                                }}
+                            >
+                                <ImageDown size={13} />
+                                PNG
+                            </button>
+
+                            {/* Ghost: Copy SVG source */}
                             <button
                                 onClick={copySvg}
                                 disabled={!svgStr}
                                 onMouseEnter={() => setCpHover(true)}
                                 onMouseLeave={() => setCpHover(false)}
-                                className={`flex-none ${sharedBtn}`}
+                                className={`flex-none px-4 ${sharedBtn}`}
                                 style={{
                                     backgroundColor: cpBg,
                                     borderColor: cpBdr,
@@ -362,9 +422,9 @@ const QRCodePage: React.FC = () => {
                                     transform: (cpHover && svgStr) ? 'translateY(-2px)' : undefined,
                                     boxShadow: (cpHover && svgStr) ? '0 4px 12px rgba(0,0,0,0.12)' : undefined,
                                 }}
+                                title="Copy SVG source"
                             >
                                 {copied ? <Check size={13} /> : <Copy size={13} />}
-                                {copied ? 'Copied!' : 'Copy'}
                             </button>
                         </div>
                     </section>
