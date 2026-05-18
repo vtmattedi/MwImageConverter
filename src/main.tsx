@@ -9,9 +9,14 @@ import { GlobalProvider } from './Providers/Globals.tsx';
 import { AlertProvider } from './Providers/Alerts.tsx';
 import Converter from './Pages/Converter.tsx';
 import QRCodePage from './Pages/QRCode.tsx';
+import Landing from './Pages/Landing.tsx';
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <Layout><Landing /></Layout>,
+  },
+  {
+    path: "/converter",
     element: <Layout><Converter /></Layout>,
   },
   {
@@ -19,8 +24,9 @@ const router = createBrowserRouter([
     element: <Layout><QRCodePage /></Layout>,
   },
   {
+    // 404 → landing page
     path: "*",
-    element: <Layout><Converter /></Layout>,
+    element: <Layout><Landing /></Layout>,
   },
 ]);
 createRoot(document.getElementById('root')!).render(

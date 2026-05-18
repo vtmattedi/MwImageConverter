@@ -16,14 +16,20 @@ import Logo from './Logo';
 // import { useLocation } from 'react-router-dom';
 // import { useAlert } from '@/Providers/Alerts';
 const NAV_ITEMS = [
-    { label: 'Converter', path: '/' },
+    { label: 'Converter', path: '/converter' },
     { label: 'QR Studio', path: '/qrcode' },
 ];
+
+const PAGE_TITLE: Record<string, string> = {
+    '/converter': 'Image Converter',
+    '/qrcode':    'QR Studio',
+};
 
 const Header: React.FC = () => {
     const Navigate = useNavigate();
     const location = useLocation();
     const { onMobile } = useGlobals();
+    const toolTitle = PAGE_TITLE[location.pathname] ?? null;
     // const fireConfetti = () => {
     //     const duration = 5 * 1000;
     //     const animationEnd = Date.now() + duration;
@@ -90,21 +96,27 @@ const Header: React.FC = () => {
 
             <div className='flex flex-row justify-between items-center gap-2 w-full max-w-[1200px] '>
                 {
-                    <div className={`flex gap-1 hover:cursor-pointer ${onMobile ? 'flex-col items-start' : 'flex-row items-start'}`}
-                        onClick={() => {
-                            Navigate('/');
-                        }}
-                        style={{
-                            color: 'var(--text-secondary)',
-                            fontSize: '0.9rem',
-                            alignItems: 'flex-end',
-
-                        }}>
-                        <span className='font-audiowide text-2xl flex gap-1 items-center'>
-                            <Logo className='h-7 w-7 shrink-0' style={{ color: 'var(--foreground)' }} />
-                            Image Converter
-                        </span>
-                        <i className='font-lato text-sm'>by mattediworks &copy;</i>
+                    <div
+                        className="flex items-end gap-2 hover:cursor-pointer"
+                        onClick={() => Navigate('/')}
+                    >
+                        <Logo className='h-7 w-7 shrink-0' style={{ color: 'var(--foreground)' }} />
+                        {toolTitle ? (
+                            <div className="flex flex-col items-start leading-none">
+                                <span className='font-audiowide text-xl text-[var(--foreground)]'>
+                                    {toolTitle}
+                                </span>
+                                {!onMobile && (
+                                    <i className='font-lato text-xs text-[var(--muted-foreground)]'>
+                                        by mattediworks &copy;
+                                    </i>
+                                )}
+                            </div>
+                        ) : (
+                            <span className='font-audiowide text-xl text-[var(--foreground)]'>
+                                mattedi<span style={{ color: '#ff9849' }}>works</span>
+                            </span>
+                        )}
                     </div>
                 }
                 {!onMobile && (

@@ -175,6 +175,25 @@ button {
   font-style: normal;
 }
 
+/* ── Landing page entrance animations ─────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade-up   { animation: fade-up 0.52s ease both; }
+.anim-fade-up-1 { animation: fade-up 0.52s 0.08s ease both; }
+.anim-fade-up-2 { animation: fade-up 0.52s 0.18s ease both; }
+.anim-fade-up-3 { animation: fade-up 0.52s 0.30s ease both; }
+.anim-fade-up-4 { animation: fade-up 0.52s 0.42s ease both; }
+.anim-fade-up-5 { animation: fade-up 0.52s 0.55s ease both; }
+.anim-fade-up-6 { animation: fade-up 0.52s 0.68s ease both; }
+
+/* ── Tool card shimmer on hover ─────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
 /* Manual Cursor Control */
 
 .setCursor .recharts-layer .recharts-pie-sector {
