@@ -275,8 +275,8 @@ const Landing: React.FC = () => {
                 <div className="flex items-center gap-2.5">
                     <Logo className="h-5 w-5" style={{ color: 'var(--foreground)' }} />
                     <span className="font-sansation text-sm text-[var(--muted-foreground)] leading-none">
-                        <span style={{ fontWeight: 700 }}>Mattedi</span>
-                        <span style={{ fontWeight: 400, color: '#F5961C' }}>works</span>
+                        <span style={{ fontWeight: 700 }}>MATTEDI</span>
+                        <span style={{ fontWeight: 400, color: '#F5961C' }}>WORKS</span>
                     </span>
                 </div>
 
