@@ -16,7 +16,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 4173,
     allowedHosts: [
-      'converter.MattediWorks.com',
+      'converter.mattediworks.com',
       'localhost',
       '127.0.0.1'
     ]

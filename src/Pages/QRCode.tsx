@@ -6,11 +6,11 @@ import { useGlobals } from '@/Providers/Globals';
 const ORANGE = '#F5961C';
 const NAVY   = '#1B2F5E';
 
-const ECL_LEVELS: { key: 'L' | 'M' | 'Q' | 'H'; pct: string }[] = [
-    { key: 'L', pct: '7%'  },
-    { key: 'M', pct: '15%' },
-    { key: 'Q', pct: '25%' },
-    { key: 'H', pct: '30%' },
+const ECL_LEVELS: { key: 'L' | 'M' | 'Q' | 'H'; label: string; pct: string; desc: string }[] = [
+    { key: 'L', label: 'Low',  pct: '7%',  desc: 'Smallest code' },
+    { key: 'M', label: 'Med',  pct: '15%', desc: 'Recommended'   },
+    { key: 'Q', label: 'Qtr',  pct: '25%', desc: 'Good balance'  },
+    { key: 'H', label: 'High', pct: '30%', desc: 'Most robust'   },
 ];
 
 const CORNERS = [
@@ -19,6 +19,33 @@ const CORNERS = [
     'bottom-3 left-3 border-b border-l',
     'bottom-3 right-3 border-b border-r',
 ];
+
+/* ── Shared reusable bits ──────────────────────────────── */
+
+const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <h2 className="flex items-center gap-3 mb-5">
+        <span
+            className="w-1 h-5 shrink-0"
+            style={{ backgroundColor: ORANGE, borderRadius: '2px' }}
+        />
+        <span className="font-lato font-semibold text-sm text-[var(--foreground)] tracking-wide uppercase">
+            {children}
+        </span>
+    </h2>
+);
+
+const FieldLabel: React.FC<{ label: string; hint?: string }> = ({ label, hint }) => (
+    <div className="flex justify-between items-baseline mb-2">
+        <span className="font-lato font-semibold text-xs uppercase tracking-wider text-[var(--foreground)]">
+            {label}
+        </span>
+        {hint && (
+            <span className="font-inter text-xs text-[var(--muted-foreground)]">{hint}</span>
+        )}
+    </div>
+);
+
+/* ── Page component ────────────────────────────────────── */
 
 const QRCodePage: React.FC = () => {
     const { theme, onMobile } = useGlobals();
@@ -34,9 +61,13 @@ const QRCodePage: React.FC = () => {
     const [version, setVersion] = useState(0);
     const [error, setError]     = useState('');
     const [copied, setCopied]   = useState(false);
-    const [dlHover, setDlHover]   = useState(false);
+
+    // Hover states — inline style overrides the global `button { dark:text-white }` rule
+    const [dlHover,  setDlHover]  = useState(false);
     const [pngHover, setPngHover] = useState(false);
-    const [cpHover, setCpHover]   = useState(false);
+    const [cpHover,  setCpHover]  = useState(false);
+    const [eclHover, setEclHover] = useState<string | null>(null);
+    const [txFocus,  setTxFocus]  = useState(false);
 
     useEffect(() => {
         setFg(theme === 'dark' ? '#ffffff' : '#1a1a1a');
@@ -68,16 +99,13 @@ const QRCodePage: React.FC = () => {
                     }
                 }
             }
-
             setSvgStr(
                 `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sizePx} ${sizePx}" shape-rendering="crispEdges">` +
                 `<rect width="${sizePx}" height="${sizePx}" fill="${bg}"/>` +
                 `<path d="${path}" fill="${fg}"/>` +
                 `</svg>`
             );
-            setVersion(ver);
-            setModules(count);
-            setError('');
+            setVersion(ver); setModules(count); setError('');
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : 'Failed to generate QR code.');
             setSvgStr(''); setModules(0); setVersion(0);
@@ -86,17 +114,42 @@ const QRCodePage: React.FC = () => {
 
     const byteLength = useMemo(() => new TextEncoder().encode(text).length, [text]);
 
+    /* ── Download helpers ──────────────────────────────── */
+
     const download = () => {
         if (!svgStr) return;
         const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
-        a.href     = url;
-        a.download = `qrcode-${Date.now()}.svg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        a.href = url; a.download = `qrcode-${Date.now()}.svg`;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+    };
+
+    const downloadPng = () => {
+        if (!svgStr) return;
+        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl  = URL.createObjectURL(svgBlob);
+        const img     = new Image();
+        img.onload = () => {
+            const size   = img.naturalWidth;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size * 2;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { URL.revokeObjectURL(svgUrl); return; }
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(svgUrl);
+            canvas.toBlob(pngBlob => {
+                if (!pngBlob) return;
+                const pngUrl = URL.createObjectURL(pngBlob);
+                const a = document.createElement('a');
+                a.href = pngUrl; a.download = `qrcode-${Date.now()}.png`;
+                document.body.appendChild(a); a.click();
+                document.body.removeChild(a); URL.revokeObjectURL(pngUrl);
+            }, 'image/png');
+        };
+        img.src = svgUrl;
     };
 
     const copySvg = async () => {
@@ -106,134 +159,121 @@ const QRCodePage: React.FC = () => {
         setTimeout(() => setCopied(false), 1500);
     };
 
-    const downloadPng = () => {
-        if (!svgStr) return;
-        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-        const svgUrl  = URL.createObjectURL(svgBlob);
-        const img     = new Image();
-        img.onload = () => {
-            // Render at 2× for sharper PNGs at low scale settings
-            const size   = img.naturalWidth;
-            const canvas = document.createElement('canvas');
-            canvas.width  = size * 2;
-            canvas.height = size * 2;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) { URL.revokeObjectURL(svgUrl); return; }
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            URL.revokeObjectURL(svgUrl);
-            canvas.toBlob(pngBlob => {
-                if (!pngBlob) return;
-                const pngUrl = URL.createObjectURL(pngBlob);
-                const a      = document.createElement('a');
-                a.href       = pngUrl;
-                a.download   = `qrcode-${Date.now()}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(pngUrl);
-            }, 'image/png');
-        };
-        img.src = svgUrl;
-    };
+    /* ── Button colour logic (inline wins over dark:text-white) ── */
 
-    // Download button: orange on hover → navy text for contrast; foreground bg otherwise
-    const dlBg    = dlHover ? ORANGE              : 'var(--foreground)';
-    const dlBdr   = dlHover ? ORANGE              : 'var(--foreground)';
-    const dlColor = dlHover ? NAVY                : 'var(--background)';
+    // SVG: orange always, navy text — hover lifts
+    const dlBg    = ORANGE;
+    const dlColor = NAVY;
+    const dlShadow = (dlHover && svgStr) ? `0 6px 22px rgba(245,150,28,0.45)` : '0 2px 8px rgba(245,150,28,0.2)';
+    const dlTransform = (dlHover && svgStr) ? 'translateY(-2px)' : undefined;
 
-    // PNG button (ghost): same ghost treatment as Copy
-    const pngBg    = pngHover ? 'var(--foreground)' : 'transparent';
-    const pngBdr   = 'var(--foreground)';
-    const pngColor = pngHover ? 'var(--background)' : 'var(--foreground)';
+    // PNG: navy always, white text — hover brightens
+    const pngBg    = pngHover ? '#2d5aa3' : NAVY;
+    const pngColor = '#ffffff';
+    const pngShadow = (pngHover && svgStr) ? '0 6px 22px rgba(27,47,94,0.4)' : '0 2px 8px rgba(27,47,94,0.15)';
+    const pngTransform = (pngHover && svgStr) ? 'translateY(-2px)' : undefined;
 
-    // Copy button (ghost): foreground bg on hover → background text; transparent otherwise
+    // Copy: ghost
     const cpBg    = cpHover ? 'var(--foreground)' : 'transparent';
     const cpBdr   = 'var(--foreground)';
     const cpColor = cpHover ? 'var(--background)' : 'var(--foreground)';
 
-    const sharedBtn = `flex items-center justify-center gap-2.5
-        py-3.5 px-5 font-jetbrains text-xs tracking-[0.18em] uppercase cursor-pointer
-        transition-all duration-150 border
+    const sharedBtn = `flex items-center justify-center gap-2 py-3 px-4
+        font-lato font-semibold text-xs tracking-wider uppercase cursor-pointer
+        transition-all duration-150 border-0
         disabled:opacity-35 disabled:cursor-not-allowed`;
 
     return (
         <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-            <div className={`max-w-[1100px] mx-auto pb-16 pt-10 ${onMobile ? 'px-4' : 'px-7'}`}>
+            <div className={`max-w-[1100px] mx-auto pb-16 pt-8 ${onMobile ? 'px-4' : 'px-7'}`}>
 
-                {/* ── Page title bar ───────────────────────────── */}
-                <div className="flex items-center justify-between py-3 mb-1 border-b border-[var(--border)]">
+                {/* ── Page title bar ─────────────────────────── */}
+                <div className="flex items-center justify-between pb-4 mb-6 border-b border-[var(--border)]">
                     <h1 className="font-audiowide text-2xl leading-none">
                         QR <span style={{ color: ORANGE }}>Studio</span>
                     </h1>
-                    <div className="flex items-center gap-3 font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)] hidden sm:flex">
-                        <span>SVG &amp; PNG export</span>
-                        <span
-                            className="w-px h-3 shrink-0"
-                            style={{ backgroundColor: 'var(--border)' }}
-                        />
-                        <span>Client-side only</span>
+                    <div className="hidden sm:flex items-center gap-4 font-inter text-xs text-[var(--muted-foreground)]">
+                        <span className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ORANGE }} />
+                            SVG &amp; PNG export
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--border)]" />
+                            Client-side only
+                        </span>
                     </div>
                 </div>
 
-                {/* ── Main grid ────────────────────────────────── */}
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.05fr] gap-12 pt-10">
+                {/* ── Main grid ──────────────────────────────── */}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.05fr] gap-12">
 
-                    {/* Controls */}
+                    {/* ── Controls ───────────────────────────── */}
                     <section>
-                        <h2 className="font-jetbrains text-[10px] tracking-[0.22em] uppercase text-[var(--muted-foreground)] mb-4 flex items-center gap-2.5">
-                            <span className="w-5 h-px bg-[var(--foreground)] shrink-0" />
-                            Settings
-                        </h2>
+                        <SectionTitle>Settings</SectionTitle>
 
                         {/* Content textarea */}
                         <div className="mb-5">
-                            <label className="flex justify-between items-baseline font-jetbrains text-[11px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] mb-2">
-                                <span>Content</span>
-                                <span className="text-[10px] tracking-normal normal-case">{byteLength} bytes</span>
-                            </label>
+                            <FieldLabel label="Content" hint={`${byteLength} bytes`} />
                             <textarea
                                 value={text}
                                 onChange={e => setText(e.target.value)}
+                                onFocus={() => setTxFocus(true)}
+                                onBlur={() => setTxFocus(false)}
                                 placeholder="URL, phone number, plain text, vCard…"
                                 spellCheck={false}
-                                className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] p-3 font-jetbrains text-[13px] leading-[1.55] resize-y outline-none min-h-[88px] transition-all placeholder:text-[var(--muted-foreground)]"
-                                style={{ borderRadius: '8px' }}
+                                className="w-full bg-[var(--card)] text-[var(--foreground)] p-3 font-jetbrains text-sm leading-relaxed resize-y outline-none min-h-[88px] transition-all placeholder:text-[var(--muted-foreground)] border"
+                                style={{
+                                    borderRadius: '8px',
+                                    borderColor: txFocus ? ORANGE : 'var(--border)',
+                                    boxShadow: txFocus ? `0 0 0 3px rgba(245,150,28,0.15)` : undefined,
+                                }}
                             />
                         </div>
 
                         {/* Error correction level */}
                         <div className="mb-5">
-                            <label className="flex justify-between items-baseline font-jetbrains text-[11px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] mb-2">
-                                <span>Error correction</span>
-                                <span className="text-[10px] normal-case">damage recovery</span>
-                            </label>
+                            <FieldLabel label="Error correction" hint="damage recovery" />
                             <div
-                                className="grid grid-cols-4 border border-[var(--border)] overflow-hidden"
-                                style={{ borderRadius: '8px' }}
+                                className="grid grid-cols-4 overflow-hidden border border-[var(--border)]"
+                                style={{ borderRadius: '10px' }}
                             >
                                 {ECL_LEVELS.map(l => {
-                                    const active = ecl === l.key;
+                                    const active  = ecl === l.key;
+                                    const hovered = eclHover === l.key && !active;
                                     return (
                                         <button
                                             key={l.key}
                                             type="button"
                                             onClick={() => setEcl(l.key)}
-                                            className="border-r border-[var(--border)] last:border-r-0 py-3 font-jetbrains text-xs cursor-pointer transition-colors text-center"
+                                            onMouseEnter={() => setEclHover(l.key)}
+                                            onMouseLeave={() => setEclHover(null)}
+                                            className="border-r border-[var(--border)] last:border-r-0 py-3 px-1 font-lato cursor-pointer transition-colors text-center"
                                             style={{
-                                                backgroundColor: active ? 'var(--foreground)' : 'var(--card)',
-                                                color: active ? 'var(--background)' : 'var(--foreground)',
+                                                backgroundColor: active
+                                                    ? ORANGE
+                                                    : hovered
+                                                        ? 'rgba(245,150,28,0.1)'
+                                                        : 'var(--card)',
+                                                color: active ? NAVY : 'var(--foreground)',
                                             }}
                                         >
-                                            {l.key}
                                             <span
-                                                className="block text-[9px] tracking-wider mt-0.5"
-                                                style={{
-                                                    color: active ? 'var(--background)' : 'var(--muted-foreground)',
-                                                    opacity: active ? 0.6 : 1,
-                                                }}
+                                                className="block font-bold text-sm leading-tight"
+                                                style={{ color: active ? NAVY : 'var(--foreground)' }}
+                                            >
+                                                {l.key}
+                                            </span>
+                                            <span
+                                                className="block text-[10px] mt-0.5 font-normal leading-tight"
+                                                style={{ color: active ? NAVY : 'var(--muted-foreground)', opacity: active ? 0.75 : 1 }}
                                             >
                                                 {l.pct}
+                                            </span>
+                                            <span
+                                                className="block text-[9px] mt-0.5 leading-tight hidden sm:block"
+                                                style={{ color: active ? NAVY : 'var(--muted-foreground)', opacity: active ? 0.6 : 0.8 }}
+                                            >
+                                                {l.desc}
                                             </span>
                                         </button>
                                     );
@@ -248,15 +288,13 @@ const QRCodePage: React.FC = () => {
                                 { label: 'Background', value: bg, set: setBg },
                             ] as const).map(({ label, value, set }) => (
                                 <div key={label}>
-                                    <label className="block font-jetbrains text-[11px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] mb-2">
-                                        {label}
-                                    </label>
+                                    <FieldLabel label={label} />
                                     <div
                                         className="flex items-center gap-2.5 border border-[var(--border)] bg-[var(--card)] p-1.5 pr-2.5"
                                         style={{ borderRadius: '8px' }}
                                     >
                                         <span
-                                            className="w-[28px] h-[28px] border border-[var(--border)] relative overflow-hidden shrink-0"
+                                            className="w-7 h-7 border border-[var(--border)] relative overflow-hidden shrink-0"
                                             style={{ background: value, borderRadius: '5px' }}
                                         >
                                             <input
@@ -270,7 +308,7 @@ const QRCodePage: React.FC = () => {
                                             type="text"
                                             value={value}
                                             onChange={e => set(e.target.value)}
-                                            className="border-none bg-transparent p-1 font-jetbrains text-xs text-[var(--foreground)] outline-none w-full"
+                                            className="border-none bg-transparent font-jetbrains text-xs text-[var(--foreground)] outline-none w-full"
                                         />
                                     </div>
                                 </div>
@@ -279,14 +317,11 @@ const QRCodePage: React.FC = () => {
 
                         {/* Sliders */}
                         {([
-                            { label: 'Quiet zone', hint: 'modules',    min: 0, max: 10, value: margin, set: setMargin },
+                            { label: 'Quiet zone', hint: 'modules',     min: 0, max: 10, value: margin, set: setMargin },
                             { label: 'Scale',      hint: 'px / module', min: 2, max: 20, value: scale,  set: setScale  },
                         ] as const).map(({ label, hint, min, max, value, set }) => (
                             <div key={label} className="mb-5">
-                                <label className="flex justify-between font-jetbrains text-[11px] tracking-[0.14em] uppercase text-[var(--muted-foreground)] mb-2">
-                                    <span>{label}</span>
-                                    <span className="text-[10px] normal-case">{hint}</span>
-                                </label>
+                                <FieldLabel label={label} hint={hint} />
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="range"
@@ -295,7 +330,10 @@ const QRCodePage: React.FC = () => {
                                         onChange={e => set(parseInt(e.target.value, 10))}
                                         className="flex-1 cursor-pointer accent-orange-400"
                                     />
-                                    <span className="font-jetbrains text-xs text-[var(--foreground)] min-w-[32px] text-right tabular-nums">
+                                    <span
+                                        className="font-jetbrains text-sm text-[var(--foreground)] min-w-[32px] text-right tabular-nums font-medium"
+                                        style={{ color: ORANGE }}
+                                    >
                                         {String(value).padStart(2, '0')}
                                     </span>
                                 </div>
@@ -303,12 +341,9 @@ const QRCodePage: React.FC = () => {
                         ))}
                     </section>
 
-                    {/* Preview */}
+                    {/* ── Preview ────────────────────────────── */}
                     <section className="flex flex-col">
-                        <h2 className="font-jetbrains text-[10px] tracking-[0.22em] uppercase text-[var(--muted-foreground)] mb-4 flex items-center gap-2.5">
-                            <span className="w-5 h-px bg-[var(--foreground)] shrink-0" />
-                            Preview
-                        </h2>
+                        <SectionTitle>Preview</SectionTitle>
 
                         {/* QR paper */}
                         <div
@@ -319,11 +354,15 @@ const QRCodePage: React.FC = () => {
                             }}
                         >
                             {CORNERS.map((cls, i) => (
-                                <span key={i} className={`absolute w-3.5 h-3.5 border-[var(--border)] pointer-events-none ${cls}`} />
+                                <span
+                                    key={i}
+                                    className={`absolute w-3.5 h-3.5 pointer-events-none ${cls}`}
+                                    style={{ borderColor: ORANGE }}
+                                />
                             ))}
                             <div className="w-full h-full flex items-center justify-center">
                                 {error ? (
-                                    <p className="text-center font-jetbrains text-xs p-4 leading-relaxed" style={{ color: ORANGE }}>
+                                    <p className="text-center font-inter text-sm p-4 leading-relaxed" style={{ color: ORANGE }}>
                                         ⚠ {error}
                                     </p>
                                 ) : svgStr ? (
@@ -332,14 +371,14 @@ const QRCodePage: React.FC = () => {
                                         dangerouslySetInnerHTML={{ __html: svgStr }}
                                     />
                                 ) : (
-                                    <p className="text-center text-[var(--muted-foreground)] font-jetbrains text-xs tracking-widest">
+                                    <p className="text-center text-[var(--muted-foreground)] font-inter text-sm">
                                         — enter content —
                                     </p>
                                 )}
                             </div>
                         </div>
 
-                        {/* Stats bar — rounded bottom, flush with QR paper */}
+                        {/* Stats bar */}
                         <div
                             className="grid grid-cols-3 border border-t-0 border-[var(--border)]"
                             style={{ borderRadius: '0 0 12px 12px' }}
@@ -351,23 +390,29 @@ const QRCodePage: React.FC = () => {
                             ].map(({ k, v, s }, idx, arr) => (
                                 <div
                                     key={k}
-                                    className="border-r border-[var(--border)] last:border-r-0 p-3.5 bg-[var(--card)]"
+                                    className="border-r border-[var(--border)] last:border-r-0 px-4 py-3 bg-[var(--card)]"
                                     style={{
-                                        borderRadius: idx === arr.length - 1 ? '0 0 12px 0' : idx === 0 ? '0 0 0 12px' : undefined,
+                                        borderRadius: idx === 0 ? '0 0 0 12px' : idx === arr.length - 1 ? '0 0 12px 0' : undefined,
                                     }}
                                 >
-                                    <div className="font-jetbrains text-[9px] tracking-[0.18em] uppercase text-[var(--muted-foreground)] mb-1.5">{k}</div>
+                                    <div className="font-lato text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
+                                        {k}
+                                    </div>
                                     <div className="font-audiowide text-xl leading-none text-[var(--foreground)]">
                                         {v}
-                                        {s && <small className="font-lato text-[11px] text-[var(--muted-foreground)] ml-1 font-normal">{s}</small>}
+                                        {s && (
+                                            <small className="font-lato text-xs text-[var(--muted-foreground)] ml-1 font-normal">
+                                                {s}
+                                            </small>
+                                        )}
                                     </div>
                                 </div>
                             ))}
                         </div>
 
                         {/* Action buttons */}
-                        <div className="flex gap-3 mt-4">
-                            {/* Primary: Download SVG */}
+                        <div className="flex gap-2.5 mt-4">
+                            {/* SVG — orange brand pill */}
                             <button
                                 onClick={download}
                                 disabled={!svgStr}
@@ -376,18 +421,18 @@ const QRCodePage: React.FC = () => {
                                 className={`flex-1 ${sharedBtn}`}
                                 style={{
                                     backgroundColor: dlBg,
-                                    borderColor: dlBdr,
                                     color: dlColor,
                                     borderRadius: '8px',
-                                    transform: (dlHover && svgStr) ? 'translateY(-2px)' : undefined,
-                                    boxShadow: (dlHover && svgStr) ? '0 6px 20px rgba(245,150,28,0.35)' : undefined,
+                                    transform: dlTransform,
+                                    boxShadow: dlShadow,
+                                    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                                 }}
                             >
-                                <Download size={13} />
-                                SVG
+                                <Download size={14} />
+                                Download SVG
                             </button>
 
-                            {/* Secondary: Download PNG */}
+                            {/* PNG — navy brand pill */}
                             <button
                                 onClick={downloadPng}
                                 disabled={!svgStr}
@@ -396,42 +441,41 @@ const QRCodePage: React.FC = () => {
                                 className={`flex-1 ${sharedBtn}`}
                                 style={{
                                     backgroundColor: pngBg,
-                                    borderColor: pngBdr,
                                     color: pngColor,
                                     borderRadius: '8px',
-                                    transform: (pngHover && svgStr) ? 'translateY(-2px)' : undefined,
-                                    boxShadow: (pngHover && svgStr) ? '0 4px 12px rgba(0,0,0,0.12)' : undefined,
+                                    transform: pngTransform,
+                                    boxShadow: pngShadow,
+                                    transition: 'transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease',
                                 }}
                             >
-                                <ImageDown size={13} />
-                                PNG
+                                <ImageDown size={14} />
+                                Download PNG
                             </button>
 
-                            {/* Ghost: Copy SVG source */}
+                            {/* Copy SVG source — ghost */}
                             <button
                                 onClick={copySvg}
                                 disabled={!svgStr}
                                 onMouseEnter={() => setCpHover(true)}
                                 onMouseLeave={() => setCpHover(false)}
-                                className={`flex-none px-4 ${sharedBtn}`}
+                                className={`flex-none px-3.5 ${sharedBtn} border`}
                                 style={{
                                     backgroundColor: cpBg,
                                     borderColor: cpBdr,
                                     color: cpColor,
                                     borderRadius: '8px',
-                                    transform: (cpHover && svgStr) ? 'translateY(-2px)' : undefined,
-                                    boxShadow: (cpHover && svgStr) ? '0 4px 12px rgba(0,0,0,0.12)' : undefined,
+                                    transition: 'background-color 0.15s ease, color 0.15s ease',
                                 }}
                                 title="Copy SVG source"
                             >
-                                {copied ? <Check size={13} /> : <Copy size={13} />}
+                                {copied ? <Check size={14} /> : <Copy size={14} />}
                             </button>
                         </div>
                     </section>
                 </div>
 
                 {/* Footer */}
-                <footer className="mt-14 pt-4 border-t border-[var(--border)] flex justify-between font-jetbrains text-[10px] tracking-[0.16em] uppercase text-[var(--muted-foreground)]">
+                <footer className="mt-14 pt-4 border-t border-[var(--border)] flex justify-between font-inter text-xs text-[var(--muted-foreground)]">
                     <span>&copy; MattediWorks</span>
                     <span>No data leaves this page</span>
                 </footer>
