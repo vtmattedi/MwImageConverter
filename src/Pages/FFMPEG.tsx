@@ -267,7 +267,7 @@ const VideoConverterPage: React.FC = () => {
                     </div>
                     <h1 className="font-audiowide text-3xl mb-3">Video Converter</h1>
                     <p className="font-lato text-sm text-[var(--muted-foreground)] max-w-[460px] leading-relaxed">
-                        Convert video and audio to MP4 and more — powered by ffmpeg.wasm.
+                        Convert video and audio to MP4 and more — powered by <a href="https://github.com/ffmpegwasm/ffmpeg.wasm" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline text-orange-400">ffmpeg.wasm</a>.
                         Everything runs in your browser; your files never leave your device.
                     </p>
                 </div>
