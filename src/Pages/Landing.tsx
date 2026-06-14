@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { FileImage, QrCode, ArrowRight, Zap, Shield, UserX } from 'lucide-react';
+import { FileImage, QrCode, Film, ArrowRight, Zap, Shield, UserX } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { useGlobals } from '@/Providers/Globals';
 
@@ -13,6 +13,15 @@ const TOOLS = [
         description:
             'Convert JPG, PNG, HEIC and more to high-quality WebP in seconds. Drag, drop, and download — all processing happens locally, no server involved.',
         cta: 'Convert images',
+    },
+    {
+        icon: Film,
+        title: 'Video Converter',
+        route: '/video',
+        badge: 'MP4',
+        description:
+            'Transcode video and audio between MP4, WebM, GIF, MP3 and more with ffmpeg.wasm. No uploads, no installs — the whole conversion runs inside your browser tab.',
+        cta: 'Convert video',
     },
     {
         icon: QrCode,

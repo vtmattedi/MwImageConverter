@@ -12,6 +12,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // ffmpeg.wasm ships an internal web worker that Vite's dep pre-bundling
+  // mangles; excluding the packages lets the worker resolve correctly.
+  optimizeDeps: {
+    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
+  },
   preview: {
     host: '0.0.0.0',
     port: 4173,

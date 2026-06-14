@@ -17,6 +17,7 @@ import Logo from './Logo';
 // import { useAlert } from '@/Providers/Alerts';
 const NAV_ITEMS = [
     { label: 'Converter', path: '/converter' },
+    { label: 'Video', path: '/video' },
     { label: 'QR Studio', path: '/qrcode' },
 ];
 

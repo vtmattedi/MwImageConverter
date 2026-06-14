@@ -9,6 +9,7 @@ import { GlobalProvider } from './Providers/Globals.tsx';
 import { AlertProvider } from './Providers/Alerts.tsx';
 import Converter from './Pages/Converter.tsx';
 import QRCodePage from './Pages/QRCode.tsx';
+import VideoConverter from './Pages/FFMPEG.tsx';
 import Landing from './Pages/Landing.tsx';
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
   {
     path: "/qrcode",
     element: <Layout><QRCodePage /></Layout>,
+  },
+  {
+    path: "/video",
+    element: <Layout><VideoConverter /></Layout>,
   },
   {
     // 404 → landing page
