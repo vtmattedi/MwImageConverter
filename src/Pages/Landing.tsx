@@ -246,10 +246,10 @@ const Landing: React.FC = () => {
 
             {/* ── Pillars ─────────────────────────────────────── */}
             <section
-                className="border-t border-[var(--border)] px-6 py-24"
+                className="border-t border-[var(--border)] px-6 py-24 min-h-[80vh] flex center"
                 style={{ backgroundColor: 'var(--card)' }}
             >
-                <div className="max-w-[960px] mx-auto">
+                <div className="max-w-[960px] mx-auto my-auto">
                     <p className="font-sansation text-base tracking-[0.2em] uppercase text-[var(--muted-foreground)] text-center mb-16">
                         Why it works
                     </p>
