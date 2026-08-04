@@ -167,13 +167,12 @@ const ConvertToWebPPage: React.FC = () => {
         }
     }
 
-    // Handle file input change
-    const handleFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Shared logic for processing a batch of files, used by both the file input and drag/drop
+    const processFiles = async (files: FileList | null) => {
         if (loading) {
             showError('Conversion in progress', 'Please wait for the current conversion to finish before adding more files.');
             return;
         }
-        const files = event.target.files;
         console.log("Files selected for conversion", files?.length);
         if (!files?.length) return;
         const pendingFiles: ConvertedFile[] = [];
@@ -251,8 +250,20 @@ const ConvertToWebPPage: React.FC = () => {
         }
 
         setLoading(false);
+    };
+
+    // Handle file input change
+    const handleFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        await processFiles(event.target.files);
         // Reset file input so that we can upload the same file again if needed
         event.target.value = "";
+    };
+
+    // Handle files dropped onto the drop zone
+    const handleDrop = async (event: React.DragEvent<HTMLLabelElement>) => {
+        event.preventDefault();
+        setDragState(false);
+        await processFiles(event.dataTransfer.files);
     };
 
     const handleDownloadAll = async () => {
@@ -303,38 +314,14 @@ const ConvertToWebPPage: React.FC = () => {
                     backgroundColor: dragState ? (theme === "dark" ? "rgba(71, 200, 247, 0.2)" : "rgba(71, 200, 247, 0.3)") : undefined
                 }}
 
-                onDragEnter={() => setDragState(true)}
+                onDragEnter={(event) => { event.preventDefault(); setDragState(true); }}
                 onDragLeave={() => setDragState(false)}
                 onDragOver={(event) => {
-                    if (loading) return;// Disable drag if loading
                     // Prevent default to allow drop
                     event.preventDefault();
                     if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-
-                    // Attach a one-time drop handler to transfer files into the hidden input and trigger change
-                    const label = event.currentTarget as HTMLLabelElement;
-                    const onDrop = (ev: DragEvent) => {
-                        ev.preventDefault();
-                        if (!fileInputRef.current) return;
-                        const dt = ev.dataTransfer;
-                        if (!dt) return;
-
-                        try {
-                            // Populate the file input's files (overrides the readonly property at runtime)
-                            Object.defineProperty(fileInputRef.current, "files", {
-                                value: dt.files,
-                                configurable: true,
-                            });
-                            // Dispatch a native change event so the existing onChange handler runs
-                            const changeEvent = new Event("change", { bubbles: true });
-                            fileInputRef.current.dispatchEvent(changeEvent);
-                        } catch (err) {
-                            console.error("Drop handling failed:", err);
-                        }
-                    };
-
-                    label.addEventListener("drop", onDrop, { once: true });
                 }}
+                onDrop={handleDrop}
             >
                 {
                     !dragState ? (
