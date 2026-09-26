@@ -8,8 +8,8 @@ services:
     image: mwimageconverter:latest
     container_name: mwimageconverter
     restart: unless-stopped
-    ports:
-      - "4501:4173"
+    expose:
+      - "4173"
     # Uncomment and adjust ports if your app listens on a port
     # Uncomment to mount project into container for development
     # volumes:
