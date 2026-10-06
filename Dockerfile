@@ -1,11 +1,9 @@
-# syntax=docker/dockerfile:1
-
 # ---- build: compile the static SPA ----
 FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN npm ci
 
 COPY . .
 RUN npm run build
