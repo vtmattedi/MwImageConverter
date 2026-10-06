@@ -2,11 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import qrcode from 'qrcode-generator';
 import {
     Download, ImageDown, Copy, Check,
-    Type, Wifi, User, Mail, MessageSquare, Phone, MapPin, Eye, EyeOff,
+    Type, Wifi, User, Mail, MessageSquare, Phone, MapPin,
 } from 'lucide-react';
 import { useGlobals } from '@/Providers/Globals';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Toggle } from '@/components/ui/toggle';
 import { Switch } from '@/components/ui/switch';
 
 const ORANGE = '#F5961C';
