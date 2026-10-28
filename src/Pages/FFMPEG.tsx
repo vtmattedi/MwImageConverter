@@ -35,7 +35,19 @@ interface TargetFormat {
     kind: OutputKind;
     /** Build the ffmpeg argument list for input -> output. */
     args: (input: string, output: string) => string[];
+    /** Conservative retry used when the first attempt crashes the wasm module. */
+    fallbackArgs?: (input: string, output: string) => string[];
 }
+
+/* Phone/WhatsApp clips can carry extra data streams, odd dimensions or rotation
+ * metadata that trip the single-threaded wasm build. This variant maps only the
+ * first video/audio stream, forces even dimensions and uses the lightest preset. */
+const safeVideoArgs = (extra: string[]) => (i: string, o: string) => [
+    '-i', i, '-map', '0:v:0', '-map', '0:a:0?', '-sn', '-dn',
+    '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
+    '-c:v', 'libx264', '-preset', 'ultrafast', '-threads', '1',
+    '-c:a', 'aac', ...extra, o,
+];
 
 /* Codecs below all ship in the default @ffmpeg/core build. MP4 is the
  * primary, well-tested path; yuv420p keeps the result playable everywhere. */
@@ -43,6 +55,7 @@ const FORMATS: TargetFormat[] = [
     {
         ext: 'mp4', label: 'MP4', mime: 'video/mp4', kind: 'video',
         args: (i, o) => ['-i', i, '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-c:a', 'aac', o],
+        fallbackArgs: safeVideoArgs(['-movflags', '+faststart']),
     },
     {
         ext: 'webm', label: 'WebM', mime: 'video/webm', kind: 'video',
@@ -51,10 +64,12 @@ const FORMATS: TargetFormat[] = [
     {
         ext: 'mov', label: 'MOV', mime: 'video/quicktime', kind: 'video',
         args: (i, o) => ['-i', i, '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-c:a', 'aac', o],
+        fallbackArgs: safeVideoArgs([]),
     },
     {
         ext: 'mkv', label: 'MKV', mime: 'video/x-matroska', kind: 'video',
         args: (i, o) => ['-i', i, '-c:v', 'libx264', '-preset', 'veryfast', '-c:a', 'aac', o],
+        fallbackArgs: safeVideoArgs([]),
     },
     {
         ext: 'gif', label: 'GIF', mime: 'image/gif', kind: 'image',
@@ -91,7 +106,13 @@ const VideoConverterPage: React.FC = () => {
     const cancelledRef = useRef(false);
 
     const [coreLoading, setCoreLoading] = useState(false);
-    const [coreReady, setCoreReady] = useState(false);
+    const [coreReady, setCoreReadyState] = useState(false);
+    // Mirrors coreReady so a retry inside one handler sees the current value.
+    const coreReadyRef = useRef(false);
+    const setCoreReady = (v: boolean) => {
+        coreReadyRef.current = v;
+        setCoreReadyState(v);
+    };
     const [coreProgress, setCoreProgress] = useState(0);
 
     const [file, setFile] = useState<File | null>(null);
@@ -118,7 +139,7 @@ const VideoConverterPage: React.FC = () => {
 
     /* Lazily download + instantiate the wasm core on first use. */
     const ensureCore = useCallback(async (): Promise<FFmpeg> => {
-        if (ffmpegRef.current && coreReady) return ffmpegRef.current;
+        if (ffmpegRef.current && coreReadyRef.current) return ffmpegRef.current;
 
         let ffmpeg = ffmpegRef.current;
         if (!ffmpeg) {
@@ -156,7 +177,7 @@ const VideoConverterPage: React.FC = () => {
         } finally {
             setCoreLoading(false);
         }
-    }, [coreReady]);
+    }, []);
 
     const resetOutput = () => {
         if (outUrl) URL.revokeObjectURL(outUrl);
@@ -190,11 +211,29 @@ const VideoConverterPage: React.FC = () => {
         const inName = `input.${fileExt(file.name)}`;
         const outFileName = `output.${target.ext}`;
         try {
-            const ffmpeg = await ensureCore();
-            await ffmpeg.writeFile(inName, await fetchFile(file));
+            const inputData = await fetchFile(file);
+            const run = async (args: (i: string, o: string) => string[]) => {
+                const ff = await ensureCore();
+                await ff.writeFile(inName, inputData);
+                const code = await ff.exec(args(inName, outFileName));
+                if (code !== 0) throw new Error(`ffmpeg exited with code ${code}`);
+                return ff;
+            };
 
-            const code = await ffmpeg.exec(target.args(inName, outFileName));
-            if (code !== 0) throw new Error(`ffmpeg exited with code ${code}`);
+            let ffmpeg: FFmpeg;
+            try {
+                ffmpeg = await run(target.args);
+            } catch (firstErr) {
+                if (cancelledRef.current || !target.fallbackArgs) throw firstErr;
+                // A wasm trap leaves the module in an undefined state: throw it
+                // away and retry once on a fresh instance with conservative args.
+                console.warn('First attempt failed, retrying with safe settings:', firstErr);
+                ffmpegRef.current?.terminate();
+                setCoreReady(false);
+                setProgress(0);
+                logBufRef.current = [];
+                ffmpeg = await run(target.fallbackArgs);
+            }
 
             const data = (await ffmpeg.readFile(outFileName)) as Uint8Array;
             if (!data || data.length === 0) throw new Error('Conversion produced an empty file.');
@@ -222,13 +261,20 @@ const VideoConverterPage: React.FC = () => {
                 .slice(-6);
             console.error('Conversion failed:', reason, '\nffmpeg log tail:\n' + logBufRef.current.join('\n'));
 
-            const oom = /memory|out of bounds|abort|allocation|RangeError/i.test(
+            // The module is likely corrupted after a trap; make the next run start clean.
+            ffmpegRef.current?.terminate();
+            setCoreReady(false);
+
+            const trapped = /memory access out of bounds|abort|RuntimeError/i.test(
                 reason + ' ' + logTail.join(' '),
             );
             const detail = logTail.length ? logTail.join(' · ') : reason || 'unknown error';
-            const hint = oom || file.size > 600 * 1024 * 1024
-                ? ` This file is ${formatBytes(file.size)} — in-browser conversion runs in a memory-limited sandbox, so large or high-bitrate videos (1080p movies/episodes) often exceed what it can handle. Try a shorter clip or a lower-resolution source.`
-                : '';
+            const isLarge = file.size > 200 * 1024 * 1024;
+            const hint = isLarge
+                ? ` This file is ${formatBytes(file.size)} — in-browser conversion is memory-limited, so large or high-bitrate videos often exceed what it can handle. Try a shorter clip or a lower-resolution source.`
+                : trapped
+                    ? ` The converter engine crashed on this file (it is only ${formatBytes(file.size)}, so size is not the cause — likely an unsupported stream or codec feature). Try a different target format.`
+                    : '';
             showError(
                 'Conversion failed',
                 `Could not convert "${file.name}" to ${target.label}.${hint}\n\nffmpeg: ${detail}`,
