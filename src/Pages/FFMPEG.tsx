@@ -106,7 +106,7 @@ const VideoConverterPage: React.FC = () => {
     const cancelledRef = useRef(false);
 
     const [coreLoading, setCoreLoading] = useState(false);
-    const [coreReady, setCoreReadyState] = useState(false);
+    const [, setCoreReadyState] = useState(false);
     // Mirrors coreReady so a retry inside one handler sees the current value.
     const coreReadyRef = useRef(false);
     const setCoreReady = (v: boolean) => {
